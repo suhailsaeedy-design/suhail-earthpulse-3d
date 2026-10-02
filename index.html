@@ -14,12 +14,18 @@
   <meta name="twitter:title" content="EarthPulse 3D — Live Earth & Space Explorer" />
   <meta name="twitter:description" content="A cinematic realistic Earth and space explorer with NASA satellite maps, live data, textured planets, the Moon and galaxies." />
   <meta name="color-scheme" content="dark light" />
+  <meta name="application-name" content="EarthPulse 3D" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="EarthPulse" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>EarthPulse 3D — Suhail Labs</title>
   <link rel="canonical" href="https://suhail-earthpulse-3d.onrender.com" />
   <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="stylesheet" href="./styles.css" />
-  <link rel="stylesheet" href="./app.bundle.css?v=realistic-v2" />
+  <link rel="stylesheet" href="./app.bundle.css?v=pwa-v1" />
 </head>
 <body data-theme="dark">
   <canvas id="spaceCanvas" aria-label="Interactive 3D Earth and space visualization"></canvas>
@@ -310,6 +316,6 @@
       earthpulseShowBootError(window.__earthpulseError || 'Runtime did not start within 12 seconds.');
     }, 12000);
   </script>
-  <script defer src="./app.bundle.js?v=realistic-v2"></script>
+  <script defer src="./app.bundle.js?v=pwa-v1"></script>
 </body>
 </html>
