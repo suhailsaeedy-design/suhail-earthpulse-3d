@@ -267,7 +267,7 @@ function focusStar(id) {
   const star=FEATURED_STARS.find(s=>s.id===id);
   if(!star) return;
   scene.focusStar(id);
-  $('.star-pick').forEach(btn=>btn.classList.toggle('active',btn.dataset.starId===id));
+  $$('.star-pick').forEach(btn=>btn.classList.toggle('active',btn.dataset.starId===id));
   els.starName.textContent=star.name;
   els.starSubtitle.textContent=star.subtitle;
   els.starFacts.innerHTML=`
@@ -282,14 +282,14 @@ function focusStar(id) {
 function renderPlanetPicker() {
   if(!els.planetPicker) return;
   els.planetPicker.innerHTML=PLANETS.map(planet=>`<button class="planet-pick" type="button" data-planet-id="${planet.id}" style="--planet-color:${planet.color}"><span><i></i><strong>${planet.name}</strong></span><small>${planet.distance}</small></button>`).join('');
-  $('.planet-pick').forEach(btn=>btn.addEventListener('click',()=>focusPlanet(btn.dataset.planetId)));
+  $$('.planet-pick').forEach(btn=>btn.addEventListener('click',()=>focusPlanet(btn.dataset.planetId)));
 }
 
 function focusPlanet(id) {
   const planet=PLANETS.find(p=>p.id===id);
   if(!planet || !els.planetCard) return;
   scene.focusPlanet(id);
-  $('.planet-pick').forEach(btn=>btn.classList.toggle('active',btn.dataset.planetId===id));
+  $$('.planet-pick').forEach(btn=>btn.classList.toggle('active',btn.dataset.planetId===id));
   els.planetName.textContent=planet.name;
   els.planetSubtitle.textContent=planet.subtitle;
   els.planetFacts.innerHTML=`
@@ -332,7 +332,7 @@ async function loadEvents() {
   }
 }
 
-$('.mode-btn').forEach(btn=>btn.addEventListener('click',()=>{ stopCinematicTour(); setMode(btn.dataset.mode); }));
+$$('.mode-btn').forEach(btn=>btn.addEventListener('click',()=>{ stopCinematicTour(); setMode(btn.dataset.mode); }));
 $('[data-mode-target]').forEach(btn=>btn.addEventListener('click',()=>{ stopCinematicTour(); setMode(btn.dataset.modeTarget); }));
 
 $$('.filter-chip').forEach(btn=>btn.addEventListener('click',()=>{
