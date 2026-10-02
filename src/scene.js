@@ -175,7 +175,7 @@ export class EarthSpaceScene {
 
     const loader = new THREE.TextureLoader();
     loader.setCrossOrigin('anonymous');
-    loader.load('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg', (texture) => {
+    loader.load('./public/earth-blue-marble.jpg', (texture) => {
       texture.colorSpace = THREE.SRGBColorSpace;
       texture.anisotropy = Math.min(8, this.renderer.capabilities.getMaxAnisotropy());
       this.earth.material.map = texture;
