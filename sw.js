@@ -1,4 +1,4 @@
-const CACHE = 'earthpulse-shell-v3';
+const CACHE = 'earthpulse-shell-v4';
 const SHELL = [
   './',
   './index.html',
