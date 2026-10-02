@@ -71,6 +71,122 @@ export const FEATURED_STARS = [
   }
 ];
 
+export const PLANETS = [
+  {
+    id: 'mercury',
+    name: 'Mercury',
+    subtitle: 'The smallest planet and the closest planet to the Sun.',
+    distance: '0.39 AU',
+    diameter: '4,879 km',
+    year: '88 Earth days',
+    moons: '0',
+    color: '#a9a39a',
+    threeColor: 0xa9a39a,
+    orbit: 2.6,
+    size: 0.18,
+    speed: 0.48
+  },
+  {
+    id: 'venus',
+    name: 'Venus',
+    subtitle: 'A rocky world wrapped in a dense atmosphere.',
+    distance: '0.72 AU',
+    diameter: '12,104 km',
+    year: '224.7 Earth days',
+    moons: '0',
+    color: '#d9b36c',
+    threeColor: 0xd9b36c,
+    orbit: 3.3,
+    size: 0.26,
+    speed: 0.35
+  },
+  {
+    id: 'earth',
+    name: 'Earth',
+    subtitle: 'Our home planet, shown here inside the solar-system overview.',
+    distance: '1.00 AU',
+    diameter: '12,742 km',
+    year: '365.25 days',
+    moons: '1',
+    color: '#5d9dff',
+    threeColor: 0x5d9dff,
+    orbit: 4.0,
+    size: 0.28,
+    speed: 0.30
+  },
+  {
+    id: 'mars',
+    name: 'Mars',
+    subtitle: 'A cold desert world with iron-rich surface material.',
+    distance: '1.52 AU',
+    diameter: '6,779 km',
+    year: '687 Earth days',
+    moons: '2',
+    color: '#d56d4c',
+    threeColor: 0xd56d4c,
+    orbit: 4.8,
+    size: 0.22,
+    speed: 0.24
+  },
+  {
+    id: 'jupiter',
+    name: 'Jupiter',
+    subtitle: 'The largest planet in the Solar System.',
+    distance: '5.20 AU',
+    diameter: '139,820 km',
+    year: '11.86 Earth years',
+    moons: 'Many',
+    color: '#d5b38a',
+    threeColor: 0xd5b38a,
+    orbit: 6.3,
+    size: 0.62,
+    speed: 0.13
+  },
+  {
+    id: 'saturn',
+    name: 'Saturn',
+    subtitle: 'A gas giant famous for its bright ring system.',
+    distance: '9.58 AU',
+    diameter: '116,460 km',
+    year: '29.45 Earth years',
+    moons: 'Many',
+    color: '#e3c982',
+    threeColor: 0xe3c982,
+    orbit: 8.2,
+    size: 0.55,
+    speed: 0.095,
+    rings: true
+  },
+  {
+    id: 'uranus',
+    name: 'Uranus',
+    subtitle: 'An ice giant with an extreme axial tilt.',
+    distance: '19.2 AU',
+    diameter: '50,724 km',
+    year: '84 Earth years',
+    moons: 'Many',
+    color: '#8fd8dc',
+    threeColor: 0x8fd8dc,
+    orbit: 10.0,
+    size: 0.42,
+    speed: 0.065
+  },
+  {
+    id: 'neptune',
+    name: 'Neptune',
+    subtitle: 'A distant ice giant with powerful atmospheric winds.',
+    distance: '30.05 AU',
+    diameter: '49,244 km',
+    year: '164.8 Earth years',
+    moons: 'Many',
+    color: '#5277e8',
+    threeColor: 0x5277e8,
+    orbit: 11.7,
+    size: 0.41,
+    speed: 0.052
+  }
+];
+
 export const weatherCodeLabel = (code) => {
   if (code === 0) return 'Clear sky';
   if ([1,2].includes(code)) return 'Mostly clear';
