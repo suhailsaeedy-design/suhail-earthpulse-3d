@@ -12,6 +12,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: earthpulse-main-writes
+  cancel-in-progress: false
+
 jobs:
   bundle:
     runs-on: ubuntu-latest
@@ -42,8 +46,16 @@ jobs:
             echo "Bundle already current."
           else
             git commit -m "build: refresh iPhone-compatible runtime bundle"
-            git pull --rebase origin main
-            git push
+            for attempt in 1 2 3 4 5; do
+              git fetch origin main
+              git rebase origin/main
+              if git push origin HEAD:main; then
+                exit 0
+              fi
+              sleep 3
+            done
+            echo "Unable to push bundled runtime after retries."
+            exit 1
           fi
 
 # runtime refresh marker: selector-fix
@@ -51,3 +63,5 @@ jobs:
 # rebuild marker: satellite-selector-fix
 
 # pwa-final-build
+
+# serialized-pwa-final-build
