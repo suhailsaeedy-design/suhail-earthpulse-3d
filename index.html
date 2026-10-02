@@ -339,20 +339,6 @@
       window.__earthpulseError = (reason && reason.message) ? reason.message : String(reason || 'Unhandled promise rejection');
     });
 
-    // Remove any older EarthPulse service workers/caches before loading the new single-file runtime.
-    try {
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(regs){
-          regs.forEach(function(reg){ reg.unregister(); });
-        }).catch(function(){});
-      }
-      if ('caches' in window) {
-        caches.keys().then(function(keys){
-          keys.filter(function(key){ return key.indexOf('earthpulse-shell-') === 0; })
-              .forEach(function(key){ caches.delete(key); });
-        }).catch(function(){});
-      }
-    } catch (e) {}
 
     window.setTimeout(function(){
       if (window.__earthpulseStarted) return;
