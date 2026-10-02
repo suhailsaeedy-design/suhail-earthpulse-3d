@@ -1,0 +1,57 @@
+name: WebKit Runtime Smoke Test
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/webkit-smoke.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Install Playwright WebKit
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install -D @playwright/test@1.55.0
+          npx playwright install --with-deps webkit
+      - name: Test local production files in WebKit
+        run: |
+          python3 -m http.server 4173 >/tmp/earthpulse-http.log 2>&1 &
+          SERVER_PID=$!
+          trap "kill $SERVER_PID || true" EXIT
+          sleep 2
+          cat > /tmp/test.mjs <<'EOF'
+          import { webkit } from 'playwright';
+          const browser = await webkit.launch();
+          const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+          const errors = [];
+          page.on('console', msg => console.log('console:', msg.type(), msg.text()));
+          page.on('pageerror', err => { errors.push(err.message); console.log('pageerror:', err.message); });
+          page.on('requestfailed', req => console.log('requestfailed:', req.url(), req.failure()?.errorText));
+          const response = await page.goto('http://127.0.0.1:4173/?ci=webkit', { waitUntil: 'domcontentloaded', timeout: 60000 });
+          console.log('status:', response?.status());
+          await page.waitForTimeout(6000);
+          const result = await page.evaluate(() => ({
+            started: window.__earthpulseStarted,
+            error: window.__earthpulseError,
+            bootDone: document.getElementById('bootScreen')?.classList.contains('done'),
+            canvas: !!document.getElementById('spaceCanvas'),
+            title: document.title
+          }));
+          console.log('result:', JSON.stringify(result));
+          await page.screenshot({ path: '/tmp/earthpulse-webkit.png', fullPage: true });
+          await browser.close();
+          if (!result.started || !result.bootDone || errors.length) process.exit(1);
+          EOF
+          node /tmp/test.mjs
