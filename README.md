@@ -27,7 +27,22 @@
 - Adaptive mobile rendering and reduced-motion support
 - iPhone/WebKit-tested single-file production runtime
 - One-tap cinematic tour and native mobile sharing
+- Install / Add to Home Screen support with dedicated iPhone instructions
+- Offline 3D core and locally cached creator/About assets
+- Automatic update checks when an installed device reconnects to the internet
+- About panel with the approved Suhail Saeedy creator portrait
 - No paid API, private API key, database or local server required
+
+## Install, offline use and automatic updates
+
+EarthPulse 3D is an installable Progressive Web App.
+
+- On browsers that support the native install prompt, use the **Install** button in the top bar.
+- On iPhone/iPad, open EarthPulse in Safari, tap **Share**, choose **Add to Home Screen**, then confirm **Add**.
+- After the first successful installation/visit, the local app shell, creator About panel, 3D Earth, Solar System, Moon, Galaxy and locally stored textures are cached for offline use.
+- Live earthquakes, current weather, location search and fresh NASA satellite imagery still require internet access because those values must remain current.
+- When the device reconnects, EarthPulse checks the online release marker and service worker. If a newer release exists, the installed app refreshes to the latest version automatically.
+- The About panel uses the approved Suhail Saeedy portrait shared with the Suhail Live Wallpapers project.
 
 ## Real imagery and scientific honesty
 
@@ -62,11 +77,16 @@ suhail-earthpulse-3d/
 ├── styles.css
 ├── app.bundle.js          # generated Safari/iPhone-compatible runtime
 ├── app.bundle.css         # generated Leaflet CSS
-├── assets/                # generated Leaflet assets
+├── assets/                # generated Leaflet assets + creator portrait
+├── icons/                 # PWA / iOS Home Screen icons
+├── manifest.webmanifest
+├── sw.js                  # offline cache and update worker
+├── version.json           # online release marker
 ├── public/
 │   └── textures/          # attributed local planet/Earth/Moon textures
 ├── src/
 │   ├── main.js            # app state and UI orchestration
+│   ├── pwa.js             # installation, offline/update lifecycle
 │   ├── scene.js           # Three.js Earth/Solar System/galaxy engine
 │   ├── satellite.js       # Leaflet + NASA GIBS surface explorer
 │   ├── api.js             # USGS, NASA EONET and Open-Meteo clients
@@ -75,6 +95,8 @@ suhail-earthpulse-3d/
     ├── bundle-runtime.yml
     ├── webkit-smoke.yml
     ├── vendor-space-textures.yml
+    ├── sync-pwa-assets.yml
+    ├── pwa-version.yml
     └── pages.yml          # quality checks
 ```
 
