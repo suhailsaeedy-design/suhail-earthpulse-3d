@@ -16,6 +16,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: earthpulse-main-writes
+  cancel-in-progress: false
+
 jobs:
   stamp:
     if: github.actor != 'github-actions[bot]'
