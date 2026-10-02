@@ -32,3 +32,10 @@ jobs:
           test -s styles.css
           test -s manifest.webmanifest
           test -s favicon.svg
+      - name: Validate EarthPulse feature wiring
+        run: |
+          grep -q 'data-mode="system"' index.html
+          grep -q 'id="planetCard"' index.html
+          grep -q 'export const PLANETS' src/data.js
+          grep -q 'buildSolarSystem()' src/scene.js
+          grep -q 'earthpulse:planet' src/main.js
