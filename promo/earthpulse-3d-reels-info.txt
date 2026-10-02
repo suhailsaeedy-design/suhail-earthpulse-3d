@@ -2,5 +2,5 @@ width=1080
 height=1920
 r_frame_rate=30/1
 r_frame_rate=0/0
-duration=118.933333
-size=17039286
+duration=98.466667
+size=14133110
