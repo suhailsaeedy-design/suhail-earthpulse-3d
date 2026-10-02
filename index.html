@@ -19,6 +19,7 @@
   <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./app.bundle.css" />
 </head>
 <body data-theme="dark">
   <canvas id="spaceCanvas" aria-label="Interactive 3D Earth and space visualization"></canvas>
@@ -64,9 +65,12 @@
         <h1>Watch our world<br/><span>come alive.</span></h1>
         <p>Explore a cinematic 3D Earth, current natural events, local weather, the Solar System and an immersive galaxy — all in one live experience.</p>
         <div class="hero-actions">
-          <button class="primary-btn" type="button" data-mode-target="events">
-            <span>Explore live events</span>
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg>
+          <button class="primary-btn" id="satelliteButton" type="button">
+            <span>Satellite Earth</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18c4-6 8-10 16-12M7 20c2-5 6-9 13-12"/><circle cx="6" cy="18" r="2"/></svg>
+          </button>
+          <button class="ghost-btn" type="button" data-mode-target="events">
+            <span class="spark">⌁</span> Live events
           </button>
           <button class="ghost-btn" type="button" data-mode-target="system">
             <span class="spark">☉</span> Solar system
@@ -160,6 +164,15 @@
         <small>Planet sizes and orbit spacing are intentionally compressed for visualization and are not to scale.</small>
       </section>
 
+      <section class="galaxy-card glass-panel" id="galaxyCard" aria-live="polite" aria-hidden="true">
+        <button class="detail-close" id="galaxyClose" type="button" aria-label="Close galaxy details">×</button>
+        <span class="detail-type">GALAXY DESTINATION</span>
+        <h3 id="galaxyName">Milky Way</h3>
+        <p id="galaxySubtitle">Our home galaxy.</p>
+        <div class="galaxy-facts" id="galaxyFacts"></div>
+        <small>Galaxy fly-throughs are scientific visualizations, not live telescope footage and not spatially to scale.</small>
+      </section>
+
       <section class="star-card glass-panel" id="starCard" aria-live="polite" aria-hidden="true">
         <button class="detail-close" id="starClose" type="button" aria-label="Close star details">×</button>
         <span class="detail-type">FEATURED STAR</span>
@@ -173,7 +186,7 @@
         <div class="solar-title">
           <span>SOLAR SYSTEM MODE</span>
           <h2>Fly from planet to planet.</h2>
-          <p>Explore the Sun and eight planets in a cinematic compressed-scale model.</p>
+          <p>Explore the Sun, eight textured planets and the Moon with real mapped surface imagery where available.</p>
         </div>
         <div class="planet-picker" id="planetPicker"></div>
       </div>
@@ -181,9 +194,10 @@
       <div class="space-hud" id="spaceHud" aria-hidden="true">
         <div class="space-title">
           <span>GALAXY MODE</span>
-          <h2>Travel between featured stars.</h2>
-          <p>Select a star and the camera will fly in for a cinematic close-up.</p>
+          <h2>Enter nearby galaxies and stars.</h2>
+          <p>Choose a galaxy destination or a featured star and fly through a cinematic deep-space visualization.</p>
         </div>
+        <div class="galaxy-picker" id="galaxyPicker"></div>
         <div class="star-picker" id="starPicker"></div>
       </div>
 
@@ -223,6 +237,29 @@
       <div class="boot-line"><i></i></div>
     </div>
   </div>
+
+  <section class="satellite-shell" id="satelliteShell" aria-hidden="true">
+    <div id="satelliteMap" class="satellite-map" aria-label="NASA satellite map"></div>
+    <div class="satellite-tools glass-panel">
+      <button id="satelliteClose" class="sat-tool-btn" type="button">← Globe</button>
+      <div class="sat-layer-group">
+        <button class="sat-layer active" type="button" data-sat-layer="daily">VIIRS True Color</button>
+        <button class="sat-layer" type="button" data-sat-layer="base">Blue Marble</button>
+      </div>
+      <div class="sat-source"><strong>NASA GIBS</strong><span id="satelliteDate">Satellite imagery</span></div>
+    </div>
+    <div class="satellite-selection glass-panel" id="satelliteSelection" aria-hidden="true">
+      <div>
+        <span>SELECTED POINT</span>
+        <strong id="satelliteCoords">—</strong>
+      </div>
+      <button id="satelliteWeather" type="button">Weather</button>
+      <button id="satelliteGlobe" type="button">3D Globe</button>
+    </div>
+    <div class="satellite-note glass-panel">
+      Drag and pinch to explore. Details only open after an intentional tap.
+    </div>
+  </section>
 
   <noscript>
     <div class="noscript">EarthPulse 3D requires JavaScript to render the interactive planet.</div>
