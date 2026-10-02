@@ -310,14 +310,14 @@ async function loadWeather(lat,lon,place='Selected location') {
 function renderGalaxyPicker() {
   if(!els.galaxyPicker) return;
   els.galaxyPicker.innerHTML=GALAXIES.map(g=>`<button class="galaxy-pick" type="button" data-galaxy-id="${g.id}" style="--galaxy-color:${g.color}"><span><i></i><strong>${g.name}</strong></span><small>${g.distance}</small></button>`).join('');
-  $('.galaxy-pick').forEach(btn=>btn.addEventListener('click',()=>focusGalaxy(btn.dataset.galaxyId)));
+  $$('.galaxy-pick').forEach(btn=>btn.addEventListener('click',()=>focusGalaxy(btn.dataset.galaxyId)));
 }
 
 function focusGalaxy(id) {
   const galaxy=GALAXIES.find(g=>g.id===id);
   if(!galaxy || !els.galaxyCard) return;
   scene.focusGalaxy(id);
-  $('.galaxy-pick').forEach(btn=>btn.classList.toggle('active',btn.dataset.galaxyId===id));
+  $$('.galaxy-pick').forEach(btn=>btn.classList.toggle('active',btn.dataset.galaxyId===id));
   els.galaxyName.textContent=galaxy.name;
   els.galaxySubtitle.textContent=galaxy.subtitle;
   els.galaxyFacts.innerHTML=`
@@ -357,7 +357,7 @@ function renderPlanetPicker() {
     if(planet.id==='earth') bodies.push(MOON);
   });
   els.planetPicker.innerHTML=bodies.map(body=>`<button class="planet-pick" type="button" data-planet-id="${body.id}" style="--planet-color:${body.color}"><span><i></i><strong>${body.name}</strong></span><small>${body.distance}</small></button>`).join('');
-  $('.planet-pick').forEach(btn=>btn.addEventListener('click',()=>focusPlanet(btn.dataset.planetId)));
+  $$('.planet-pick').forEach(btn=>btn.addEventListener('click',()=>focusPlanet(btn.dataset.planetId)));
 }
 
 function focusPlanet(id) {
