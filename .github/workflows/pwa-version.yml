@@ -1,0 +1,53 @@
+name: Stamp PWA Version
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "index.html"
+      - "styles.css"
+      - "manifest.webmanifest"
+      - "sw.js"
+      - "src/**"
+      - "public/**"
+      - "icons/**"
+      - "assets/images/**"
+
+permissions:
+  contents: write
+
+jobs:
+  stamp:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout latest main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Stamp runtime version
+        run: |
+          python3 - <<'PY'
+          import json, os, datetime
+          payload={
+            "version": os.environ["SOURCE_SHA"],
+            "updated": datetime.datetime.now(datetime.timezone.utc).isoformat()
+          }
+          with open("version.json","w",encoding="utf-8") as f:
+            json.dump(payload,f,indent=2)
+            f.write("\n")
+          PY
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+      - name: Commit version marker
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add version.json
+          if git diff --cached --quiet; then
+            echo "Version marker already current."
+          else
+            git commit -m "build: stamp EarthPulse PWA version"
+            git pull --rebase origin main
+            git push
+          fi
