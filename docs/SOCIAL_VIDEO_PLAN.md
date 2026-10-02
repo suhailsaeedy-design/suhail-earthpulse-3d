@@ -101,6 +101,19 @@ On-screen text:
 **BY SUHAIL LABS**
 **suhail-earthpulse-3d.onrender.com**
 
+## Cinematic tour shortcut
+
+For the fastest recording workflow, open EarthPulse in Night mode and tap **Cinematic tour**. The app automatically moves through:
+1. Earth overview;
+2. a real available live event (when the feed has one);
+3. Solar System;
+4. Saturn close-up;
+5. Galaxy mode;
+6. Sirius and Betelgeuse;
+7. return to Earth.
+
+Use this automatic sequence as the visual base, then record the weather/search section separately and insert it between the event and Solar System shots.
+
 ## Recording notes
 
 - Record the website itself; do not replace the core demo with AI-generated interface footage.
