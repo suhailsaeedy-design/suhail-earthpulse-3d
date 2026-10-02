@@ -44,7 +44,10 @@ jobs:
           grep -q 'id="shareButton"' index.html
           grep -q 'id="tourButton"' index.html
           grep -q 'performanceTier' src/scene.js
-          grep -q 'navigator.serviceWorker.register' src/main.js
+          test -s app.bundle.js
+          grep -q 'app.bundle.js?v=iphone5' index.html
+          grep -q '__earthpulseStarted' src/main.js
+          grep -q 'earthpulseShowBootError' index.html
       - name: Validate iPhone module compatibility
         run: |
           grep -q "../vendor/three.module.js" src/scene.js
