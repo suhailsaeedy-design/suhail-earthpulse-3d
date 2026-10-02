@@ -45,3 +45,11 @@ jobs:
           grep -q 'id="tourButton"' index.html
           grep -q 'performanceTier' src/scene.js
           grep -q 'navigator.serviceWorker.register' src/main.js
+      - name: Validate iPhone module compatibility
+        run: |
+          grep -q "../vendor/three.module.js" src/scene.js
+          grep -q "../../three.module.js" vendor/addons/controls/OrbitControls.js
+          if grep -q 'type="importmap"' index.html; then
+            echo "Import maps are intentionally disabled for embedded iPhone webview compatibility."
+            exit 1
+          fi
