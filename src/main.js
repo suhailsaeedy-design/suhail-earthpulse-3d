@@ -1,6 +1,6 @@
 import { EarthSpaceScene } from './scene.js';
 import { fetchAllEvents, fetchWeather, searchLocation } from './api.js';
-import { FEATURED_STARS, EVENT_CSS_COLORS, formatCoord, relativeTime, weatherCodeLabel } from './data.js';
+import { FEATURED_STARS, PLANETS, EVENT_CSS_COLORS, formatCoord, relativeTime, weatherCodeLabel } from './data.js';
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -43,6 +43,11 @@ const els = {
   starSubtitle: $('#starSubtitle'),
   starFacts: $('#starFacts'),
   starPicker: $('#starPicker'),
+  planetCard: $('#planetCard'),
+  planetName: $('#planetName'),
+  planetSubtitle: $('#planetSubtitle'),
+  planetFacts: $('#planetFacts'),
+  planetPicker: $('#planetPicker'),
   mobileEventCount: $('#mobileEventCount'),
   hintText: $('#hintText')
 };
@@ -74,12 +79,18 @@ function setMode(mode) {
   els.weather.setAttribute('aria-hidden','true');
   els.starCard.classList.remove('visible');
   els.starCard.setAttribute('aria-hidden','true');
+  els.planetCard?.classList.remove('visible');
+  els.planetCard?.setAttribute('aria-hidden','true');
 
   if(mode==='earth') els.hintText.textContent='Drag to orbit · Scroll or pinch to zoom';
   if(mode==='events') els.hintText.textContent='Select a marker or event card to inspect it';
   if(mode==='weather') {
     els.hintText.textContent='Tap anywhere on Earth for live local weather';
     toast('Weather mode: tap the globe or search a place.');
+  }
+  if(mode==='system') {
+    els.hintText.textContent='Select a planet to fly in for a close-up';
+    renderPlanetPicker();
   }
   if(mode==='space') {
     renderStarPicker();
@@ -176,7 +187,7 @@ function focusStar(id) {
   const star=FEATURED_STARS.find(s=>s.id===id);
   if(!star) return;
   scene.focusStar(id);
-  $$('.star-pick').forEach(btn=>btn.classList.toggle('active',btn.dataset.starId===id));
+  $('.star-pick').forEach(btn=>btn.classList.toggle('active',btn.dataset.starId===id));
   els.starName.textContent=star.name;
   els.starSubtitle.textContent=star.subtitle;
   els.starFacts.innerHTML=`
@@ -186,6 +197,28 @@ function focusStar(id) {
     <div><small>DISPLAY RADIUS</small><strong>${star.radius}</strong></div>`;
   els.starCard.classList.add('visible');
   els.starCard.setAttribute('aria-hidden','false');
+}
+
+function renderPlanetPicker() {
+  if(!els.planetPicker) return;
+  els.planetPicker.innerHTML=PLANETS.map(planet=>`<button class="planet-pick" type="button" data-planet-id="${planet.id}" style="--planet-color:${planet.color}"><span><i></i><strong>${planet.name}</strong></span><small>${planet.distance}</small></button>`).join('');
+  $('.planet-pick').forEach(btn=>btn.addEventListener('click',()=>focusPlanet(btn.dataset.planetId)));
+}
+
+function focusPlanet(id) {
+  const planet=PLANETS.find(p=>p.id===id);
+  if(!planet || !els.planetCard) return;
+  scene.focusPlanet(id);
+  $('.planet-pick').forEach(btn=>btn.classList.toggle('active',btn.dataset.planetId===id));
+  els.planetName.textContent=planet.name;
+  els.planetSubtitle.textContent=planet.subtitle;
+  els.planetFacts.innerHTML=`
+    <div><small>FROM SUN</small><strong>${planet.distance}</strong></div>
+    <div><small>DIAMETER</small><strong>${planet.diameter}</strong></div>
+    <div><small>ORBITAL PERIOD</small><strong>${planet.year}</strong></div>
+    <div><small>MOONS</small><strong>${planet.moons}</strong></div>`;
+  els.planetCard.classList.add('visible');
+  els.planetCard.setAttribute('aria-hidden','false');
 }
 
 function escapeHtml(value='') {
@@ -235,6 +268,7 @@ $('#panelClose').addEventListener('click',()=>setMode('earth'));
 $('#detailClose').addEventListener('click',()=>els.detail.classList.remove('visible'));
 $('#weatherClose').addEventListener('click',()=>els.weather.classList.remove('visible'));
 $('#starClose').addEventListener('click',()=>els.starCard.classList.remove('visible'));
+$('#planetClose')?.addEventListener('click',()=>els.planetCard?.classList.remove('visible'));
 
 els.searchForm.addEventListener('submit',async(e)=>{
   e.preventDefault();
@@ -249,7 +283,7 @@ els.searchForm.addEventListener('submit',async(e)=>{
       toast(`No location found for “${query}”.`);
       return;
     }
-    if(state.mode==='space') setMode('earth');
+    if(state.mode==='space' || state.mode==='system') setMode('earth');
     scene.focusLocation(place.lat,place.lon);
     const label=[place.name,place.admin1,place.country].filter(Boolean).join(', ');
     if(state.mode==='weather') await loadWeather(place.lat,place.lon,label);
@@ -266,10 +300,12 @@ els.searchForm.addEventListener('submit',async(e)=>{
 window.addEventListener('earthpulse:event',(e)=>selectEvent(e.detail.event));
 window.addEventListener('earthpulse:location',(e)=>loadWeather(e.detail.lat,e.detail.lon));
 window.addEventListener('earthpulse:star',(e)=>focusStar(e.detail.id));
+window.addEventListener('earthpulse:planet',(e)=>focusPlanet(e.detail.id));
 
 setTheme(state.theme);
 setMode('earth');
 renderStarPicker();
+renderPlanetPicker();
 loadEvents();
 setTimeout(()=>els.boot.classList.add('done'),1250);
 
