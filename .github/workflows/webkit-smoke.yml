@@ -52,7 +52,8 @@ jobs:
           cat > test-webkit.mjs <<'EOF'
           import { webkit } from 'playwright';
           const browser = await webkit.launch();
-          const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+          const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+          const page = await context.newPage();
           const errors = [];
           page.on('console', msg => console.log('console:', msg.type(), msg.text()));
           page.on('pageerror', err => { errors.push(err.message); console.log('pageerror:', err.message); });
@@ -65,12 +66,39 @@ jobs:
             error: window.__earthpulseError,
             bootDone: document.getElementById('bootScreen')?.classList.contains('done'),
             canvas: !!document.getElementById('spaceCanvas'),
+            installButton: !!document.getElementById('installButton'),
+            aboutButton: !!document.getElementById('aboutButton'),
             title: document.title
           }));
           console.log('result:', JSON.stringify(result));
+
+          await page.click('#aboutButton');
+          const aboutOpen = await page.getAttribute('#aboutModal','aria-hidden');
+          await page.click('[data-modal-close="aboutModal"]');
+
+          await page.evaluate(async () => {
+            if ('serviceWorker' in navigator) await navigator.serviceWorker.ready;
+          });
+          await page.reload({ waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(2500);
+          const controlled = await page.evaluate(() => !!navigator.serviceWorker?.controller);
+
+          await context.setOffline(true);
+          await page.reload({ waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(3500);
+          const offline = await page.evaluate(() => ({
+            started: window.__earthpulseStarted,
+            bootDone: document.getElementById('bootScreen')?.classList.contains('done'),
+            earth: !!document.getElementById('spaceCanvas'),
+            about: !!document.getElementById('aboutModal')
+          }));
+          await context.setOffline(false);
+
+          console.log('pwa:', JSON.stringify({aboutOpen,controlled,offline}));
           await page.screenshot({ path: '/tmp/earthpulse-webkit.png', fullPage: true });
           await browser.close();
-          if (!result.started || !result.bootDone || errors.length) process.exit(1);
+          if (!result.started || !result.bootDone || !result.installButton || !result.aboutButton || errors.length) process.exit(1);
+          if (aboutOpen !== 'false' || !controlled || !offline.started || !offline.bootDone || !offline.earth || !offline.about) process.exit(1);
           EOF
           node test-webkit.mjs
 
@@ -81,3 +109,5 @@ jobs:
 # realistic-v2 selector-fixed validation
 
 # pwa-final-webkit-validation
+
+# offline-pwa-validation
