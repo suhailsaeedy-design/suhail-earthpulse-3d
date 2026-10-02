@@ -32,6 +32,8 @@ jobs:
           test -s styles.css
           test -s manifest.webmanifest
           test -s favicon.svg
+          test -s sw.js
+          test -s docs/SOCIAL_VIDEO_PLAN.md
       - name: Validate EarthPulse feature wiring
         run: |
           grep -q 'data-mode="system"' index.html
@@ -39,3 +41,7 @@ jobs:
           grep -q 'export const PLANETS' src/data.js
           grep -q 'buildSolarSystem()' src/scene.js
           grep -q 'earthpulse:planet' src/main.js
+          grep -q 'id="shareButton"' index.html
+          grep -q 'id="tourButton"' index.html
+          grep -q 'performanceTier' src/scene.js
+          grep -q 'navigator.serviceWorker.register' src/main.js
