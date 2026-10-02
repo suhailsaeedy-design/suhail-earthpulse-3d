@@ -55,10 +55,10 @@ jobs:
           python3 - <<'PY' > promo/raw/segments.tsv
           import json
           for item in json.load(open('promo/raw/timings.json',encoding='utf-8')):
-              print(f"{item['name']}\t{item['trim']}\t{item['duration']}")
+              print(f"{item['name']}|{item['trim']}|{item['duration']}")
           PY
 
-          while IFS=$'\t' read -r name trim duration; do
+          while IFS='|' read -r name trim duration; do
             ffmpeg -loglevel error -y               -ss "$trim" -t "$duration" -i "promo/raw/$name.webm"               -vf "scale=800:1440:flags=lanczos,pad=1080:1920:140:240:color=0x030611,setsar=1,fps=30,format=yuv420p"               -an               -c:v libx264 -profile:v high -level:v 4.2 -preset medium -crf 20               -maxrate 6000k -bufsize 12000k               "promo/raw/encoded/$name.mp4"
             echo "file '$PWD/promo/raw/encoded/$name.mp4'" >> promo/raw/concat.txt
           done < promo/raw/segments.tsv
