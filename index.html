@@ -294,6 +294,22 @@
     </article>
   </section>
 
+  <section class="app-modal" id="installModal" aria-hidden="true">
+    <button class="modal-backdrop" type="button" data-modal-close="installModal" aria-label="Close install instructions"></button>
+    <article class="install-panel glass-panel" role="dialog" aria-modal="true" aria-labelledby="installTitle">
+      <button class="modal-close" type="button" data-modal-close="installModal" aria-label="Close install instructions">×</button>
+      <div class="install-app-icon"><img src="./icons/icon-192.png" alt="" /></div>
+      <span class="about-kicker">INSTALL EARTHPULSE 3D</span>
+      <h2 id="installTitle">Add the app to your device</h2>
+      <div id="installInstructions" class="install-steps"></div>
+      <div class="offline-capabilities">
+        <strong>Offline after installation</strong>
+        <span>3D Earth</span><span>Solar System</span><span>Moon</span><span>Galaxy</span><span>About</span>
+      </div>
+      <small>When the device reconnects, EarthPulse checks for a newer release and refreshes to the latest version automatically.</small>
+    </article>
+  </section>
+
   <noscript>
     <div class="noscript">EarthPulse 3D requires JavaScript to render the interactive planet.</div>
   </noscript>
