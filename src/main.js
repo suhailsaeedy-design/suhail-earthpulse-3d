@@ -55,6 +55,7 @@ const els = {
 };
 
 const scene = new EarthSpaceScene(els.canvas);
+window.__earthpulseStarted = true;
 let tourToken = 0;
 
 function toast(message, duration=2600) {
@@ -397,10 +398,3 @@ setTimeout(()=>els.boot.classList.add('done'),1250);
 setInterval(loadEvents,10*60*1000);
 
 
-if ('serviceWorker' in navigator) {
-  addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(() => {
-      // EarthPulse remains fully usable online if service-worker registration is unavailable.
-    });
-  });
-}
