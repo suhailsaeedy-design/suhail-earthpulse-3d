@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#050812" />
+  <meta name="description" content="EarthPulse 3D — an interactive live Earth, natural-event, weather and space explorer by Suhail Labs." />
+  <meta name="color-scheme" content="dark light" />
+  <title>EarthPulse 3D — Suhail Labs</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="preconnect" href="https://unpkg.com" crossorigin />
+  <link rel="stylesheet" href="./styles.css" />
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body data-theme="dark">
+  <canvas id="spaceCanvas" aria-label="Interactive 3D Earth and space visualization"></canvas>
+  <div class="sky-effects" aria-hidden="true">
+    <div class="nebula nebula-a"></div>
+    <div class="nebula nebula-b"></div>
+    <div class="vignette"></div>
+  </div>
+
+  <div class="app-shell">
+    <header class="topbar glass-panel">
+      <a class="brand" href="#" aria-label="EarthPulse 3D home">
+        <span class="brand-orbit" aria-hidden="true"><i></i></span>
+        <span class="brand-copy">
+          <strong>EARTHPULSE <em>3D</em></strong>
+          <small>SUHAIL LABS</small>
+        </span>
+      </a>
+
+      <form class="search-box" id="locationSearch" role="search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 21-4.35-4.35m2.35-5.15A7.5 7.5 0 1 1 4 11.5a7.5 7.5 0 0 1 15 0Z"/></svg>
+        <input id="searchInput" type="search" autocomplete="off" placeholder="Search any city or country…" aria-label="Search a location" />
+        <kbd>↵</kbd>
+      </form>
+
+      <div class="top-actions">
+        <div class="live-pill" title="Live public data sources">
+          <span></span> LIVE DATA
+        </div>
+        <button class="icon-btn" id="themeToggle" type="button" aria-label="Switch theme" title="Light / Night mode">
+          <svg class="moon-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.4 15.3A8.5 8.5 0 0 1 8.7 3.6 8.5 8.5 0 1 0 20.4 15.3Z"/></svg>
+          <svg class="sun-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" id="heroPanel">
+        <div class="eyebrow"><span></span> LIVE PLANET INTELLIGENCE</div>
+        <h1>Watch our world<br/><span>come alive.</span></h1>
+        <p>Explore a cinematic 3D Earth, current natural events, local weather and an immersive galaxy — all in one live experience.</p>
+        <div class="hero-actions">
+          <button class="primary-btn" type="button" data-mode-target="events">
+            <span>Explore live events</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg>
+          </button>
+          <button class="ghost-btn" type="button" data-mode-target="space">
+            <span class="spark">✦</span> Enter galaxy
+          </button>
+        </div>
+        <div class="source-line">
+          <span>Verified public feeds</span>
+          <b>USGS</b><b>NASA EONET</b><b>Open-Meteo</b>
+        </div>
+      </section>
+
+      <section class="metrics glass-panel" aria-label="Live global metrics">
+        <article>
+          <div class="metric-icon quake"><span></span></div>
+          <div><small>EARTHQUAKES · 24H</small><strong id="quakeCount">—</strong></div>
+        </article>
+        <article>
+          <div class="metric-icon fire">⌁</div>
+          <div><small>OPEN WILDFIRE EVENTS</small><strong id="fireCount">—</strong></div>
+        </article>
+        <article>
+          <div class="metric-icon storm">◌</div>
+          <div><small>OPEN STORM EVENTS</small><strong id="stormCount">—</strong></div>
+        </article>
+        <article>
+          <div class="metric-icon pulse">⌁</div>
+          <div><small>DATA STATUS</small><strong id="dataStatus">SYNCING</strong></div>
+        </article>
+      </section>
+
+      <aside class="explorer glass-panel" id="explorerPanel" aria-label="Explorer panel">
+        <div class="panel-head">
+          <div>
+            <span class="panel-kicker" id="panelKicker">EARTH EXPLORER</span>
+            <h2 id="panelTitle">Live Events</h2>
+          </div>
+          <button class="panel-close" id="panelClose" type="button" aria-label="Close explorer panel">×</button>
+        </div>
+
+        <div class="event-controls" id="eventControls">
+          <button class="filter-chip active" type="button" data-filter="all">All</button>
+          <button class="filter-chip" type="button" data-filter="earthquake">Quakes</button>
+          <button class="filter-chip" type="button" data-filter="wildfire">Fires</button>
+          <button class="filter-chip" type="button" data-filter="storm">Storms</button>
+          <button class="filter-chip" type="button" data-filter="volcano">Volcanoes</button>
+        </div>
+
+        <div class="panel-note" id="panelNote">Select an event to fly to its location.</div>
+        <div class="event-list" id="eventList" aria-live="polite">
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+        </div>
+      </aside>
+
+      <section class="detail-card glass-panel" id="detailCard" aria-live="polite" aria-hidden="true">
+        <button class="detail-close" id="detailClose" type="button" aria-label="Close details">×</button>
+        <span class="detail-type" id="detailType">EVENT</span>
+        <h3 id="detailTitle">Select a live event</h3>
+        <p id="detailSubtitle">Event details will appear here.</p>
+        <div class="detail-grid" id="detailGrid"></div>
+        <a id="detailSource" class="source-link" href="#" target="_blank" rel="noopener noreferrer">Open original source ↗</a>
+      </section>
+
+      <section class="weather-card glass-panel" id="weatherCard" aria-live="polite" aria-hidden="true">
+        <button class="detail-close" id="weatherClose" type="button" aria-label="Close weather">×</button>
+        <span class="detail-type">LOCAL WEATHER</span>
+        <div class="weather-main">
+          <div>
+            <h3 id="weatherPlace">Tap the globe</h3>
+            <p id="weatherCondition">Choose a location on Earth</p>
+          </div>
+          <strong id="weatherTemp">—°</strong>
+        </div>
+        <div class="weather-stats" id="weatherStats"></div>
+        <small class="weather-coords" id="weatherCoords"></small>
+      </section>
+
+      <section class="star-card glass-panel" id="starCard" aria-live="polite" aria-hidden="true">
+        <button class="detail-close" id="starClose" type="button" aria-label="Close star details">×</button>
+        <span class="detail-type">FEATURED STAR</span>
+        <h3 id="starName">Sirius</h3>
+        <p id="starSubtitle">The brightest star in Earth's night sky.</p>
+        <div class="star-facts" id="starFacts"></div>
+        <small>Close-up views are scientific visualizations, not live camera imagery.</small>
+      </section>
+
+      <div class="space-hud" id="spaceHud" aria-hidden="true">
+        <div class="space-title">
+          <span>GALAXY MODE</span>
+          <h2>Travel between featured stars.</h2>
+          <p>Select a star and the camera will fly in for a cinematic close-up.</p>
+        </div>
+        <div class="star-picker" id="starPicker"></div>
+      </div>
+
+      <nav class="mode-dock glass-panel" aria-label="Experience modes">
+        <button class="mode-btn active" type="button" data-mode="earth">
+          <span class="mode-icon">◉</span><span>Earth</span>
+        </button>
+        <button class="mode-btn" type="button" data-mode="events">
+          <span class="mode-icon">⌁</span><span>Events</span>
+        </button>
+        <button class="mode-btn" type="button" data-mode="weather">
+          <span class="mode-icon">☁</span><span>Weather</span>
+        </button>
+        <button class="mode-btn" type="button" data-mode="space">
+          <span class="mode-icon">✦</span><span>Galaxy</span>
+        </button>
+      </nav>
+
+      <div class="interaction-hint glass-panel" id="interactionHint">
+        <span class="mouse-glyph">↔</span>
+        <span id="hintText">Drag to orbit · Scroll or pinch to zoom</span>
+      </div>
+
+      <button class="mobile-panel-trigger glass-panel" id="mobilePanelTrigger" type="button">
+        <span>Live explorer</span><b id="mobileEventCount">—</b>
+      </button>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <div class="boot-screen" id="bootScreen">
+      <div class="boot-orbit"><span></span><i></i></div>
+      <strong>EARTHPULSE 3D</strong>
+      <small>Connecting Earth to space…</small>
+      <div class="boot-line"><i></i></div>
+    </div>
+  </div>
+
+  <noscript>
+    <div class="noscript">EarthPulse 3D requires JavaScript to render the interactive planet.</div>
+  </noscript>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
