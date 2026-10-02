@@ -20,6 +20,8 @@ jobs:
           mkdir -p vendor/addons/controls public
           curl -fL --retry 4 --retry-delay 2 "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" -o vendor/three.module.js
           curl -fL --retry 4 --retry-delay 2 "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js" -o vendor/addons/controls/OrbitControls.js
+          sed -i "s/from 'three';/from '..\/..\/three.module.js';/" vendor/addons/controls/OrbitControls.js
+          echo "Patch OrbitControls local import"
           curl -fL --retry 4 --retry-delay 2 "https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg" -o public/earth-blue-marble.jpg
           test -s vendor/three.module.js
           test -s vendor/addons/controls/OrbitControls.js
