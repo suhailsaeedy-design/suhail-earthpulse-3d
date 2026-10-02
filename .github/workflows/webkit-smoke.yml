@@ -31,7 +31,7 @@ jobs:
           SERVER_PID=$!
           trap "kill $SERVER_PID || true" EXIT
           sleep 2
-          cat > /tmp/test.mjs <<'EOF'
+          cat > test-webkit.mjs <<'EOF'
           import { webkit } from 'playwright';
           const browser = await webkit.launch();
           const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
@@ -54,4 +54,4 @@ jobs:
           await browser.close();
           if (!result.started || !result.bootDone || errors.length) process.exit(1);
           EOF
-          node /tmp/test.mjs
+          node test-webkit.mjs
