@@ -56,7 +56,11 @@ suhail-earthpulse-3d/
 
 ## Deployment
 
-The included workflow deploys the repository root as a static GitHub Pages site whenever `main` changes. If Pages has not yet been activated for this repository, open **Settings → Pages → Build and deployment → Source** and select **GitHub Actions** once. No local computer, Node.js, database, or paid hosting is required.
+The production site is hosted as a **free Render Static Site** and automatically redeploys from the `main` branch.
+
+**Live site:** https://suhail-earthpulse-3d.onrender.com
+
+No local computer, Node.js installation, database, or paid hosting is required. The GitHub Actions workflow performs syntax and required-file quality checks on every push.
 
 ## Privacy and security
 
