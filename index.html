@@ -228,19 +228,51 @@
     <div class="noscript">EarthPulse 3D requires JavaScript to render the interactive planet.</div>
   </noscript>
 
-  <script type="module" src="./src/main.js?v=compat4"></script>
   <script>
-    (function earthpulseBootWatchdog(){
-      window.setTimeout(function(){
-        var boot=document.getElementById('bootScreen');
-        if(!boot || boot.classList.contains('done')) return;
-        boot.innerHTML =
-          '<div class="boot-orbit"><span></span><i></i></div>' +
-          '<strong>EARTHPULSE 3D</strong>' +
-          '<small style="max-width:260px;text-align:center;line-height:1.55">The 3D engine did not start correctly. Tap Retry to reload the local app runtime.</small>' +
-          '<button type="button" onclick="location.reload()" style="margin-top:8px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.08);color:#fff;border-radius:12px;padding:10px 18px;font-weight:700">Retry</button>';
-      }, 10000);
-    })();
+    window.__earthpulseStarted = false;
+    window.__earthpulseError = '';
+
+    function earthpulseShowBootError(message) {
+      var boot = document.getElementById('bootScreen');
+      if (!boot) return;
+      var safe = String(message || 'Unknown startup error')
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      boot.innerHTML =
+        '<div class="boot-orbit"><span></span><i></i></div>' +
+        '<strong>EARTHPULSE 3D</strong>' +
+        '<small style="max-width:300px;text-align:center;line-height:1.55">3D startup failed on this browser.</small>' +
+        '<small style="max-width:300px;text-align:center;line-height:1.45;color:#ff9fb0;word-break:break-word">' + safe + '</small>' +
+        '<button type="button" onclick="location.replace(location.pathname + \'?fresh=iphone5-\' + Date.now())" style="margin-top:8px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.08);color:#fff;border-radius:12px;padding:10px 18px;font-weight:700">Retry fresh</button>';
+    }
+
+    window.addEventListener('error', function(event) {
+      window.__earthpulseError = event.message || (event.error && event.error.message) || 'JavaScript error';
+    });
+    window.addEventListener('unhandledrejection', function(event) {
+      var reason = event.reason;
+      window.__earthpulseError = (reason && reason.message) ? reason.message : String(reason || 'Unhandled promise rejection');
+    });
+
+    // Remove any older EarthPulse service workers/caches before loading the new single-file runtime.
+    try {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(regs){
+          regs.forEach(function(reg){ reg.unregister(); });
+        }).catch(function(){});
+      }
+      if ('caches' in window) {
+        caches.keys().then(function(keys){
+          keys.filter(function(key){ return key.indexOf('earthpulse-shell-') === 0; })
+              .forEach(function(key){ caches.delete(key); });
+        }).catch(function(){});
+      }
+    } catch (e) {}
+
+    window.setTimeout(function(){
+      if (window.__earthpulseStarted) return;
+      earthpulseShowBootError(window.__earthpulseError || 'Runtime did not start within 12 seconds.');
+    }, 12000);
   </script>
+  <script defer src="./app.bundle.js?v=iphone5"></script>
 </body>
 </html>
