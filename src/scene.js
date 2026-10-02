@@ -60,6 +60,11 @@ export class EarthSpaceScene {
     this.clock = new THREE.Clock();
     this.tween = null;
     this.glowTexture = makeGlowTexture();
+    const memory = Number(navigator.deviceMemory || 8);
+    const compact = innerWidth < 760;
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    this.performanceTier = (compact || memory <= 4) ? 'balanced' : 'high';
+    this.reducedMotion = reducedMotion;
 
     this.scene = new THREE.Scene();
     this.scene.fog = new THREE.FogExp2(0x02050e, 0.012);
@@ -67,7 +72,7 @@ export class EarthSpaceScene {
     this.camera.position.set(0.8, 0.35, 7.6);
 
     this.renderer = new THREE.WebGLRenderer({canvas, antialias: true, alpha: true, powerPreference:'high-performance'});
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio, 1.8));
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio, this.performanceTier==='balanced' ? 1.35 : 1.8));
     this.renderer.setSize(innerWidth, innerHeight, false);
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -80,7 +85,7 @@ export class EarthSpaceScene {
     this.controls.minDistance = 3.3;
     this.controls.maxDistance = 50;
     this.controls.autoRotate = true;
-    this.controls.autoRotateSpeed = .28;
+    this.controls.autoRotateSpeed = this.reducedMotion ? 0 : .28;
     this.controls.rotateSpeed = .38;
     this.controls.zoomSpeed = .7;
 
@@ -105,7 +110,7 @@ export class EarthSpaceScene {
   }
 
   buildStars() {
-    const count = innerWidth < 720 ? 2200 : 4800;
+    const count = this.performanceTier==='balanced' ? 1800 : 4800;
     const positions = new Float32Array(count*3);
     const colors = new Float32Array(count*3);
     const color = new THREE.Color();
@@ -129,7 +134,7 @@ export class EarthSpaceScene {
   }
 
   buildGalaxy() {
-    const count = innerWidth < 720 ? 1800 : 4200;
+    const count = this.performanceTier==='balanced' ? 1500 : 4200;
     const positions = new Float32Array(count*3);
     const colors = new Float32Array(count*3);
     const c1 = new THREE.Color(0x5aa8ff);
@@ -370,7 +375,7 @@ export class EarthSpaceScene {
     const space=mode==='space';
     const system=mode==='system';
 
-    this.controls.autoRotate=!space && !system;
+    this.controls.autoRotate=!this.reducedMotion && !space && !system;
     this.controls.minDistance=space ? 1.3 : system ? 2.2 : 3.3;
     this.controls.maxDistance=space ? 90 : system ? 35 : 15;
 
@@ -506,7 +511,7 @@ export class EarthSpaceScene {
   resize() {
     this.camera.aspect=innerWidth/innerHeight;
     this.camera.updateProjectionMatrix();
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio, innerWidth<720 ? 1.5 : 1.8));
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio, this.performanceTier==='balanced' ? 1.35 : 1.8));
     this.renderer.setSize(innerWidth,innerHeight,false);
   }
 
