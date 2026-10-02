@@ -18,6 +18,7 @@ const els = {
   boot: $('#bootScreen'),
   toast: $('#toast'),
   theme: $('#themeToggle'),
+  share: $('#shareButton'),
   searchForm: $('#locationSearch'),
   searchInput: $('#searchInput'),
   quakeCount: $('#quakeCount'),
@@ -59,6 +60,31 @@ function toast(message, duration=2600) {
   els.toast.classList.add('visible');
   clearTimeout(toast.timer);
   toast.timer=setTimeout(()=>els.toast.classList.remove('visible'),duration);
+}
+
+async function shareEarthPulse() {
+  const shareData = {
+    title: 'EarthPulse 3D — Suhail Labs',
+    text: 'Explore live Earth events, weather, the Solar System and an interactive galaxy in EarthPulse 3D.',
+    url: 'https://suhail-earthpulse-3d.onrender.com'
+  };
+  try {
+    if (navigator.share) {
+      await navigator.share(shareData);
+      return;
+    }
+    await navigator.clipboard.writeText(shareData.url);
+    toast('EarthPulse link copied.');
+  } catch (error) {
+    if (error?.name !== 'AbortError') {
+      try {
+        await navigator.clipboard.writeText(shareData.url);
+        toast('EarthPulse link copied.');
+      } catch {
+        toast('Share is unavailable in this browser.');
+      }
+    }
+  }
 }
 
 function setTheme(theme) {
@@ -264,6 +290,7 @@ $$('.filter-chip').forEach(btn=>btn.addEventListener('click',()=>{
 }));
 
 els.theme.addEventListener('click',()=>setTheme(state.theme==='dark'?'light':'dark'));
+els.share?.addEventListener('click',shareEarthPulse);
 $('#panelClose').addEventListener('click',()=>setMode('earth'));
 $('#detailClose').addEventListener('click',()=>els.detail.classList.remove('visible'));
 $('#weatherClose').addEventListener('click',()=>els.weather.classList.remove('visible'));
