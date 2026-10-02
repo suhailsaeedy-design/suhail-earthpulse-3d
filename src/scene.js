@@ -1,6 +1,6 @@
 import * as THREE from '../vendor/three.module.js';
 import { OrbitControls } from '../vendor/addons/controls/OrbitControls.js';
-import { EVENT_COLORS, FEATURED_STARS, PLANETS } from './data.js';
+import { EVENT_COLORS, FEATURED_STARS, PLANETS, MOON, GALAXIES } from './data.js';
 
 const EARTH_RADIUS = 2.35;
 
@@ -54,7 +54,11 @@ export class EarthSpaceScene {
     this.starMeshes = new Map();
     this.planetNodes = new Map();
     this.planetMeshes = [];
+    this.galaxyNodes = new Map();
+    this.galaxyMeshes = [];
     this.solarPaused = false;
+    this.pointerGesture = {down:false,x:0,y:0,moved:false};
+    this.textureLoader = new THREE.TextureLoader();
     this.pointer = new THREE.Vector2();
     this.raycaster = new THREE.Raycaster();
     this.clock = new THREE.Clock();
@@ -92,6 +96,7 @@ export class EarthSpaceScene {
     this.buildLights();
     this.buildStars();
     this.buildGalaxy();
+    this.buildGalaxyDestinations();
     this.buildEarth();
     this.buildFeaturedStars();
     this.buildSolarSystem();
@@ -158,32 +163,114 @@ export class EarthSpaceScene {
     this.scene.add(this.galaxy);
   }
 
+  buildGalaxyDestinations() {
+    this.galaxyDestinationGroup = new THREE.Group();
+    this.galaxyDestinationGroup.visible = false;
+    this.scene.add(this.galaxyDestinationGroup);
+
+    GALAXIES.forEach((galaxy,index) => {
+      const group = new THREE.Group();
+      group.position.set(...galaxy.position);
+      group.userData.galaxyId = galaxy.id;
+
+      const count = this.performanceTier==='balanced' ? 500 : 1100;
+      const positions = new Float32Array(count*3);
+      const colors = new Float32Array(count*3);
+      const base = new THREE.Color(galaxy.color);
+      for(let i=0;i<count;i++) {
+        const r = Math.pow(Math.random(),.58)*galaxy.scale;
+        const branch = i%3;
+        const angle = branch*(Math.PI*2/3) + r*.58 + (Math.random()-.5)*.72;
+        positions[i*3] = Math.cos(angle)*r;
+        positions[i*3+1] = (Math.random()-.5)*(galaxy.scale*.12 + r*.025);
+        positions[i*3+2] = Math.sin(angle)*r;
+        const cc=base.clone().lerp(new THREE.Color(0xffffff),Math.random()*.42);
+        colors[i*3]=cc.r; colors[i*3+1]=cc.g; colors[i*3+2]=cc.b;
+      }
+      const geometry=new THREE.BufferGeometry();
+      geometry.setAttribute('position',new THREE.BufferAttribute(positions,3));
+      geometry.setAttribute('color',new THREE.BufferAttribute(colors,3));
+      const cloud=new THREE.Points(geometry,new THREE.PointsMaterial({
+        size:.07,vertexColors:true,transparent:true,opacity:.82,depthWrite:false,blending:THREE.AdditiveBlending
+      }));
+      cloud.userData.galaxyId=galaxy.id;
+      group.add(cloud);
+
+      const hit=new THREE.Mesh(
+        new THREE.SphereGeometry(Math.max(1.2,galaxy.scale*.35),18,12),
+        new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false})
+      );
+      hit.userData.galaxyId=galaxy.id;
+      group.add(hit);
+      this.galaxyMeshes.push(hit);
+
+      this.galaxyDestinationGroup.add(group);
+      this.galaxyNodes.set(galaxy.id,{group,data:galaxy});
+    });
+  }
+
   buildEarth() {
     this.earthGroup = new THREE.Group();
     this.scene.add(this.earthGroup);
 
-    const geometry = new THREE.SphereGeometry(EARTH_RADIUS, 96, 64);
+    const geometry = new THREE.SphereGeometry(EARTH_RADIUS, 128, 96);
     const material = new THREE.MeshPhongMaterial({
       map: makeEarthFallbackTexture(),
-      shininess: 18,
-      specular: new THREE.Color(0x345b8f),
-      emissive: new THREE.Color(0x020817),
-      emissiveIntensity: .35
+      shininess: 12,
+      specular: new THREE.Color(0x294b72),
+      emissive: new THREE.Color(0xffffff),
+      emissiveIntensity: .18
     });
     this.earth = new THREE.Mesh(geometry, material);
     this.earthGroup.add(this.earth);
 
-    const loader = new THREE.TextureLoader();
-    loader.setCrossOrigin('anonymous');
-    loader.load('./public/earth-blue-marble.jpg', (texture) => {
+    const maxAniso = Math.min(8, this.renderer.capabilities.getMaxAnisotropy());
+    this.textureLoader.load('./public/textures/earth-day.jpg', (texture) => {
       texture.colorSpace = THREE.SRGBColorSpace;
-      texture.anisotropy = Math.min(8, this.renderer.capabilities.getMaxAnisotropy());
+      texture.anisotropy = maxAniso;
       this.earth.material.map = texture;
+      this.earth.material.needsUpdate = true;
+    }, undefined, () => {
+      this.textureLoader.load('./public/earth-blue-marble.jpg', (texture) => {
+        texture.colorSpace = THREE.SRGBColorSpace;
+        texture.anisotropy = maxAniso;
+        this.earth.material.map = texture;
+        this.earth.material.needsUpdate = true;
+      });
+    });
+
+    this.textureLoader.load('./public/textures/earth-night.jpg', (texture) => {
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.anisotropy = maxAniso;
+      this.earth.material.emissiveMap = texture;
+      this.earth.material.emissive = new THREE.Color(0xffffff);
+      this.earth.material.emissiveIntensity = .42;
       this.earth.material.needsUpdate = true;
     }, undefined, () => {});
 
+    this.cloudLayer = new THREE.Mesh(
+      new THREE.SphereGeometry(EARTH_RADIUS*1.012, 112, 80),
+      new THREE.MeshPhongMaterial({
+        color:0xffffff,
+        transparent:true,
+        opacity:.42,
+        depthWrite:false,
+        side:THREE.DoubleSide
+      })
+    );
+    this.earthGroup.add(this.cloudLayer);
+    this.textureLoader.load('./public/textures/earth-clouds.jpg', (texture) => {
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.anisotropy = maxAniso;
+      this.cloudLayer.material.map = texture;
+      this.cloudLayer.material.alphaMap = texture;
+      this.cloudLayer.material.needsUpdate = true;
+    }, undefined, () => {
+      this.cloudLayer.visible = false;
+    });
+
     const atmosphere = new THREE.Mesh(
-      new THREE.SphereGeometry(EARTH_RADIUS*1.045,96,64),
+      new THREE.SphereGeometry(EARTH_RADIUS*1.045,112,80),
       new THREE.ShaderMaterial({
         transparent:true,
         side:THREE.BackSide,
@@ -196,13 +283,6 @@ export class EarthSpaceScene {
     );
     this.atmosphere = atmosphere;
     this.earthGroup.add(atmosphere);
-
-    const grid = new THREE.Mesh(
-      new THREE.SphereGeometry(EARTH_RADIUS*1.007,64,48),
-      new THREE.MeshBasicMaterial({color:0x8fc5ff,wireframe:true,transparent:true,opacity:.018,depthWrite:false})
-    );
-    grid.scale.y = 1.001;
-    this.earthGroup.add(grid);
 
     this.markerGroup = new THREE.Group();
     this.earthGroup.add(this.markerGroup);
@@ -239,11 +319,17 @@ export class EarthSpaceScene {
     this.solarGroup.visible = false;
     this.scene.add(this.solarGroup);
 
+    const sunMaterial = new THREE.MeshBasicMaterial({color:0xffc85f});
     const sunCore = new THREE.Mesh(
-      new THREE.SphereGeometry(.78, 64, 40),
-      new THREE.MeshBasicMaterial({color:0xffcf75})
+      new THREE.SphereGeometry(.82, 72, 48),
+      sunMaterial
     );
     this.solarGroup.add(sunCore);
+    this.textureLoader.load('./public/textures/sun.jpg', (texture) => {
+      texture.colorSpace = THREE.SRGBColorSpace;
+      sunMaterial.map=texture;
+      sunMaterial.needsUpdate=true;
+    }, undefined, () => {});
 
     const sunGlow = new THREE.Sprite(new THREE.SpriteMaterial({
       map:this.glowTexture,
@@ -256,20 +342,19 @@ export class EarthSpaceScene {
     sunGlow.scale.setScalar(6.4);
     this.solarGroup.add(sunGlow);
 
-    const solarLight = new THREE.PointLight(0xffddb0, 12, 45, 1.4);
+    const solarLight = new THREE.PointLight(0xffddb0, 13, 48, 1.35);
     this.solarGroup.add(solarLight);
 
     PLANETS.forEach((planet,index) => {
       const orbitPoints=[];
-      for(let i=0;i<160;i++) {
-        const a=(i/160)*Math.PI*2;
+      for(let i=0;i<180;i++) {
+        const a=(i/180)*Math.PI*2;
         orbitPoints.push(new THREE.Vector3(Math.cos(a)*planet.orbit,0,Math.sin(a)*planet.orbit));
       }
-
       const orbitGeometry=new THREE.BufferGeometry().setFromPoints(orbitPoints);
       const orbitLine=new THREE.LineLoop(
         orbitGeometry,
-        new THREE.LineBasicMaterial({color:0x8ba7d7,transparent:true,opacity:.12})
+        new THREE.LineBasicMaterial({color:0x7892bf,transparent:true,opacity:.10})
       );
       this.solarGroup.add(orbitLine);
 
@@ -282,42 +367,111 @@ export class EarthSpaceScene {
       group.position.set(planet.orbit,0,0);
       group.userData.planetId=planet.id;
 
-      const core=new THREE.Mesh(
-        new THREE.SphereGeometry(planet.size,40,28),
-        new THREE.MeshPhongMaterial({
-          color:planet.threeColor,
-          shininess:planet.id==='earth' ? 30 : 12,
-          emissive:new THREE.Color(planet.threeColor).multiplyScalar(.11)
-        })
-      );
+      const planetMaterial=new THREE.MeshPhongMaterial({
+        color:0xffffff,
+        shininess:planet.id==='earth' ? 22 : 6,
+        specular:new THREE.Color(planet.id==='earth' ? 0x426b91 : 0x222222),
+        emissive:new THREE.Color(0x050505),
+        emissiveIntensity:.05
+      });
+      const core=new THREE.Mesh(new THREE.SphereGeometry(planet.size,56,36),planetMaterial);
       core.userData.planetId=planet.id;
       group.add(core);
       this.planetMeshes.push(core);
+
+      if(planet.texture) {
+        this.textureLoader.load(planet.texture,(texture)=>{
+          texture.colorSpace=THREE.SRGBColorSpace;
+          texture.anisotropy=Math.min(8,this.renderer.capabilities.getMaxAnisotropy());
+          planetMaterial.map=texture;
+          planetMaterial.needsUpdate=true;
+        },undefined,()=>{ planetMaterial.color.set(planet.threeColor); });
+      } else {
+        planetMaterial.color.set(planet.threeColor);
+      }
+
+      if(planet.id==='earth') {
+        if(planet.nightTexture) {
+          this.textureLoader.load(planet.nightTexture,(texture)=>{
+            texture.colorSpace=THREE.SRGBColorSpace;
+            planetMaterial.emissiveMap=texture;
+            planetMaterial.emissive=new THREE.Color(0xffffff);
+            planetMaterial.emissiveIntensity=.28;
+            planetMaterial.needsUpdate=true;
+          },undefined,()=>{});
+        }
+        if(planet.cloudTexture) {
+          const clouds=new THREE.Mesh(
+            new THREE.SphereGeometry(planet.size*1.012,48,32),
+            new THREE.MeshPhongMaterial({color:0xffffff,transparent:true,opacity:.38,depthWrite:false})
+          );
+          group.add(clouds);
+          this.textureLoader.load(planet.cloudTexture,(texture)=>{
+            texture.colorSpace=THREE.SRGBColorSpace;
+            clouds.material.map=texture;
+            clouds.material.alphaMap=texture;
+            clouds.material.needsUpdate=true;
+          },undefined,()=>{ clouds.visible=false; });
+        }
+
+        const moonOrbit=new THREE.Mesh(
+          new THREE.RingGeometry(planet.size*2.5,planet.size*2.52,64),
+          new THREE.MeshBasicMaterial({color:0x96a6c2,transparent:true,opacity:.16,side:THREE.DoubleSide,depthWrite:false})
+        );
+        moonOrbit.rotation.x=Math.PI/2;
+        group.add(moonOrbit);
+
+        const moonPivot=new THREE.Group();
+        moonPivot.userData.baseAngle=1.2;
+        moonPivot.userData.speed=.72;
+        const moonGroup=new THREE.Group();
+        moonGroup.position.set(planet.size*2.52,0,0);
+        moonGroup.userData.planetId='moon';
+        const moonMaterial=new THREE.MeshPhongMaterial({color:0xd6d7d9,shininess:2});
+        const moonCore=new THREE.Mesh(new THREE.SphereGeometry(MOON.size,40,28),moonMaterial);
+        moonCore.userData.planetId='moon';
+        moonGroup.add(moonCore);
+        this.planetMeshes.push(moonCore);
+        this.textureLoader.load(MOON.texture,(texture)=>{
+          texture.colorSpace=THREE.SRGBColorSpace;
+          moonMaterial.map=texture;
+          moonMaterial.needsUpdate=true;
+        },undefined,()=>{});
+        moonPivot.add(moonGroup);
+        group.add(moonPivot);
+        this.planetNodes.set('moon',{pivot:moonPivot,group:moonGroup,data:MOON});
+      }
 
       const glow=new THREE.Sprite(new THREE.SpriteMaterial({
         map:this.glowTexture,
         color:planet.threeColor,
         transparent:true,
-        opacity:.28,
+        opacity:.20,
         depthWrite:false,
         blending:THREE.AdditiveBlending
       }));
-      glow.scale.setScalar(Math.max(.8,planet.size*3.5));
+      glow.scale.setScalar(Math.max(.65,planet.size*2.8));
       group.add(glow);
 
       if(planet.rings) {
-        const ring=new THREE.Mesh(
-          new THREE.RingGeometry(planet.size*1.35,planet.size*2.05,72),
-          new THREE.MeshBasicMaterial({
-            color:0xd8c7a3,
-            transparent:true,
-            opacity:.55,
-            side:THREE.DoubleSide,
-            depthWrite:false
-          })
-        );
+        const ringMaterial=new THREE.MeshBasicMaterial({
+          color:0xffffff,
+          transparent:true,
+          opacity:.72,
+          side:THREE.DoubleSide,
+          depthWrite:false
+        });
+        const ring=new THREE.Mesh(new THREE.RingGeometry(planet.size*1.35,planet.size*2.2,96),ringMaterial);
         ring.rotation.x=Math.PI/2.28;
         group.add(ring);
+        if(planet.ringTexture) {
+          this.textureLoader.load(planet.ringTexture,(texture)=>{
+            texture.colorSpace=THREE.SRGBColorSpace;
+            ringMaterial.map=texture;
+            ringMaterial.alphaMap=texture;
+            ringMaterial.needsUpdate=true;
+          },undefined,()=>{ ringMaterial.color.set(0xd8c7a3); });
+        }
       }
 
       pivot.add(group);
@@ -328,7 +482,25 @@ export class EarthSpaceScene {
 
   bindEvents() {
     addEventListener('resize', () => this.resize(), {passive:true});
-    this.canvas.addEventListener('pointerup', (e) => this.onPointer(e));
+    this.canvas.addEventListener('pointerdown', (e) => {
+      this.pointerGesture={down:true,x:e.clientX,y:e.clientY,moved:false};
+    }, {passive:true});
+    this.canvas.addEventListener('pointermove', (e) => {
+      if(!this.pointerGesture.down) return;
+      const dx=e.clientX-this.pointerGesture.x;
+      const dy=e.clientY-this.pointerGesture.y;
+      if(Math.hypot(dx,dy)>8) this.pointerGesture.moved=true;
+    }, {passive:true});
+    this.canvas.addEventListener('pointercancel', () => {
+      this.pointerGesture.down=false;
+      this.pointerGesture.moved=false;
+    }, {passive:true});
+    this.canvas.addEventListener('pointerup', (e) => {
+      const moved=this.pointerGesture.moved;
+      this.pointerGesture.down=false;
+      this.pointerGesture.moved=false;
+      if(!moved) this.onPointer(e);
+    });
   }
 
   setEvents(events) {
@@ -376,12 +548,13 @@ export class EarthSpaceScene {
     const system=mode==='system';
 
     this.controls.autoRotate=!this.reducedMotion && !space && !system;
-    this.controls.minDistance=space ? 1.3 : system ? 2.2 : 3.3;
+    this.controls.minDistance=space ? 1.3 : system ? 1.05 : 2.46;
     this.controls.maxDistance=space ? 90 : system ? 35 : 15;
 
     this.earthGroup.visible=!space && !system;
     this.solarGroup.visible=system;
     this.featuredGroup.children.forEach((x)=>x.visible=space);
+    this.galaxyDestinationGroup.visible=space;
 
     this.galaxy.material.opacity=space ? .72 : system ? .28 : .12;
     this.starField.material.opacity=space || system ? 1 : .9;
@@ -420,6 +593,16 @@ export class EarthSpaceScene {
     const cameraPos=target.clone().add(outward.multiplyScalar(data.size*4.6+2.4));
     cameraPos.y += data.size*.55;
     this.animateCamera(cameraPos,target,1250);
+  }
+
+  focusGalaxy(id) {
+    const node=this.galaxyNodes.get(id);
+    if(!node) return;
+    const target=node.group.position.clone();
+    const outward=target.clone().normalize();
+    const cameraPos=target.clone().add(outward.multiplyScalar(Math.max(7,node.data.scale*1.15)));
+    cameraPos.y += node.data.scale*.15;
+    this.animateCamera(cameraPos,target,1450);
   }
 
   focusPlanet(id) {
@@ -475,6 +658,12 @@ export class EarthSpaceScene {
     }
 
     if(this.mode==='space') {
+      const galaxyHits=this.raycaster.intersectObjects(this.galaxyMeshes,false);
+      const galaxyId=galaxyHits[0]?.object?.userData?.galaxyId;
+      if(galaxyId) {
+        window.dispatchEvent(new CustomEvent('earthpulse:galaxy',{detail:{id:galaxyId}}));
+        return;
+      }
       const stars=[];
       this.starMeshes.forEach(g=>stars.push(...g.children));
       const hits=this.raycaster.intersectObjects(stars,false);
@@ -505,7 +694,7 @@ export class EarthSpaceScene {
     this.renderer.toneMappingExposure=light ? 1.22 : 1.08;
     this.scene.fog.color.set(light ? 0xddeafb : 0x02050e);
     this.atmosphere.material.uniforms.glowColor.value.set(light ? 0x3b83d9 : 0x4ba8ff);
-    this.earth.material.emissiveIntensity=light ? .15 : .35;
+    this.earth.material.emissiveIntensity=light ? .12 : .42;
   }
 
   resize() {
@@ -531,6 +720,7 @@ export class EarthSpaceScene {
     // Rotate the planet and every geospatial layer together so live markers
     // remain attached to their real latitude/longitude on the globe.
     if(this.earthGroup.visible) this.earthGroup.rotation.y += .00028;
+    if(this.cloudLayer?.visible) this.cloudLayer.rotation.y += .00009;
     this.starField.rotation.y += .000035;
     this.galaxy.rotation.y -= .00006;
 
@@ -554,6 +744,7 @@ export class EarthSpaceScene {
     }
 
     if(this.mode==='space') {
+      this.galaxyDestinationGroup.children.forEach((g,index)=>{ g.rotation.y += .0003 + index*.00008; });
       this.featuredGroup.children.forEach((g,index)=>{
         const glow=g.children[1];
         const ring=g.children[2];
