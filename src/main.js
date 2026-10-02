@@ -495,10 +495,10 @@ els.share?.addEventListener('click',shareEarthPulse);
 els.install?.addEventListener('click',()=>pwa.requestInstall());
 els.aboutInstall?.addEventListener('click',()=>pwa.requestInstall());
 els.about?.addEventListener('click',()=>openModal('aboutModal'));
-$('[data-modal-close]').forEach(btn=>btn.addEventListener('click',()=>closeModal(btn.dataset.modalClose)));
+$$('[data-modal-close]').forEach(btn=>btn.addEventListener('click',()=>closeModal(btn.dataset.modalClose)));
 document.addEventListener('keydown',(event)=>{
   if(event.key!=='Escape') return;
-  $('.app-modal[aria-hidden="false"]').forEach(modal=>closeModal(modal.id));
+  $$('.app-modal[aria-hidden="false"]').forEach(modal=>closeModal(modal.id));
 });
 els.satelliteButton?.addEventListener('click',()=>openSatellite());
 els.satelliteClose?.addEventListener('click',()=>closeSatellite());
