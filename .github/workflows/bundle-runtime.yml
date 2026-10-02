@@ -42,6 +42,7 @@ jobs:
             echo "Bundle already current."
           else
             git commit -m "build: refresh iPhone-compatible runtime bundle"
+            git pull --rebase origin main
             git push
           fi
 
