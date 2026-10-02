@@ -1,36 +1,34 @@
-name: Deploy EarthPulse 3D to GitHub Pages
+name: EarthPulse 3D Quality Check
 
 on:
   push:
+    branches: ["main"]
+  pull_request:
     branches: ["main"]
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: true
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  validate:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
+      - name: Use Node.js
+        uses: actions/setup-node@v4
         with:
-          enablement: true
-      - name: Upload static site
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: "."
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          node-version: "24"
+      - name: Validate JavaScript syntax
+        run: |
+          node --check src/data.js
+          node --check src/api.js
+          node --check src/scene.js
+          node --check src/main.js
+      - name: Validate required static files
+        run: |
+          test -s index.html
+          test -s styles.css
+          test -s manifest.webmanifest
+          test -s favicon.svg
