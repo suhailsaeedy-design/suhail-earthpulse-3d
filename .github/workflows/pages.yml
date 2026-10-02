@@ -26,6 +26,8 @@ jobs:
           node --check src/api.js
           node --check src/scene.js
           node --check src/main.js
+          node --check src/pwa.js
+          node --check src/satellite.js
       - name: Validate required static files
         run: |
           test -s index.html
@@ -45,7 +47,7 @@ jobs:
           grep -q 'id="tourButton"' index.html
           grep -q 'performanceTier' src/scene.js
           test -s app.bundle.js
-          grep -q 'app.bundle.js?v=realistic-v2' index.html
+          grep -q 'app.bundle.js?v=pwa-v1' index.html
           grep -q '__earthpulseStarted' src/main.js
           grep -q 'earthpulseShowBootError' index.html
       - name: Validate iPhone module compatibility
@@ -73,3 +75,23 @@ jobs:
           grep -q 'export const MOON' src/data.js
           grep -q 'export const GALAXIES' src/data.js
           grep -q 'pointerGesture' src/scene.js
+      - name: Validate installable offline PWA
+        run: |
+          test -s version.json
+          test -s icons/icon-192.png
+          test -s icons/icon-512.png
+          test -s icons/apple-touch-icon.png
+          test -s assets/images/suhail-saeedy-about-approved.jpeg
+          grep -q 'id="installButton"' index.html
+          grep -q 'id="aboutButton"' index.html
+          grep -q 'id="aboutModal"' index.html
+          grep -q 'id="installModal"' index.html
+          grep -q "setupPWA" src/main.js
+          grep -q "serviceWorker.register" src/pwa.js
+          grep -q "beforeinstallprompt" src/pwa.js
+          grep -q "earthpulse-offline-v7" sw.js
+          grep -q "app.bundle.js" sw.js
+          grep -q "public/textures/moon.jpg" sw.js
+          grep -q '"display": "standalone"' manifest.webmanifest
+          grep -q '"192x192"' manifest.webmanifest
+          grep -q '"512x512"' manifest.webmanifest
