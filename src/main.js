@@ -437,8 +437,8 @@ els.satelliteWeather?.addEventListener('click',async()=>{
   scene.focusLocation(point.lat,point.lon,4.8);
   await loadWeather(point.lat,point.lon,'Satellite selection');
 });
-$('.sat-layer').forEach(btn=>btn.addEventListener('click',()=>{
-  $('.sat-layer').forEach(x=>x.classList.toggle('active',x===btn));
+$$('.sat-layer').forEach(btn=>btn.addEventListener('click',()=>{
+  $$('.sat-layer').forEach(x=>x.classList.toggle('active',x===btn));
   satellite.setLayer(btn.dataset.satLayer);
 }));
 els.tour?.addEventListener('click',()=>{
