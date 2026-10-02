@@ -281,14 +281,16 @@ export class EarthSpaceScene {
 
   focusEvent(event) {
     if(!event) return;
-    const dir=this.latLonToVector3(event.lat,event.lon,1).normalize();
+    const local=this.latLonToVector3(event.lat,event.lon,1);
+    const world=this.earthGroup.localToWorld(local).normalize();
     const distance=5.7;
-    this.animateCamera(dir.multiplyScalar(distance),new THREE.Vector3(0,0,0),950);
+    this.animateCamera(world.multiplyScalar(distance),new THREE.Vector3(0,0,0),950);
   }
 
   focusLocation(lat,lon,distance=5.6) {
-    const dir=this.latLonToVector3(lat,lon,1).normalize();
-    this.animateCamera(dir.multiplyScalar(distance),new THREE.Vector3(0,0,0),1050);
+    const local=this.latLonToVector3(lat,lon,1);
+    const world=this.earthGroup.localToWorld(local).normalize();
+    this.animateCamera(world.multiplyScalar(distance),new THREE.Vector3(0,0,0),1050);
   }
 
   focusStar(id) {
@@ -387,7 +389,9 @@ export class EarthSpaceScene {
       if(p>=1) this.tween=null;
     }
 
-    if(this.earthGroup.visible) this.earth.rotation.y += .00028;
+    // Rotate the planet and every geospatial layer together so live markers
+    // remain attached to their real latitude/longitude on the globe.
+    if(this.earthGroup.visible) this.earthGroup.rotation.y += .00028;
     this.starField.rotation.y += .000035;
     this.galaxy.rotation.y -= .00006;
 
