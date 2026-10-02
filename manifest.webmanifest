@@ -1,0 +1,12 @@
+{
+  "name": "EarthPulse 3D",
+  "short_name": "EarthPulse",
+  "description": "Interactive live Earth, natural events, weather and space exploration by Suhail Labs.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#030611",
+  "theme_color": "#050812",
+  "icons": [
+    {"src":"./favicon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}
