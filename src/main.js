@@ -333,7 +333,7 @@ async function loadEvents() {
 }
 
 $$('.mode-btn').forEach(btn=>btn.addEventListener('click',()=>{ stopCinematicTour(); setMode(btn.dataset.mode); }));
-$('[data-mode-target]').forEach(btn=>btn.addEventListener('click',()=>{ stopCinematicTour(); setMode(btn.dataset.modeTarget); }));
+$$('[data-mode-target]').forEach(btn=>btn.addEventListener('click',()=>{ stopCinematicTour(); setMode(btn.dataset.modeTarget); }));
 
 $$('.filter-chip').forEach(btn=>btn.addEventListener('click',()=>{
   state.filter=btn.dataset.filter;
