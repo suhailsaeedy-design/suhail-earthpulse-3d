@@ -4,6 +4,10 @@ on:
   push:
     branches: ["main"]
     paths:
+      - "index.html"
+      - "app.bundle.js"
+      - "src/**"
+      - "vendor/**"
       - ".github/workflows/webkit-smoke.yml"
   workflow_dispatch:
 
@@ -55,3 +59,5 @@ jobs:
           if (!result.started || !result.bootDone || errors.length) process.exit(1);
           EOF
           node test-webkit.mjs
+
+# selector-fix validation
