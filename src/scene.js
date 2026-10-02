@@ -1,5 +1,5 @@
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import * as THREE from '../vendor/three.module.js';
+import { OrbitControls } from '../vendor/addons/controls/OrbitControls.js';
 import { EVENT_COLORS, FEATURED_STARS, PLANETS } from './data.js';
 
 const EARTH_RADIUS = 2.35;
