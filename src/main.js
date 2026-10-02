@@ -19,6 +19,7 @@ const els = {
   toast: $('#toast'),
   theme: $('#themeToggle'),
   share: $('#shareButton'),
+  tour: $('#tourButton'),
   searchForm: $('#locationSearch'),
   searchInput: $('#searchInput'),
   quakeCount: $('#quakeCount'),
@@ -54,6 +55,7 @@ const els = {
 };
 
 const scene = new EarthSpaceScene(els.canvas);
+let tourToken = 0;
 
 function toast(message, duration=2600) {
   els.toast.textContent = message;
@@ -84,6 +86,57 @@ async function shareEarthPulse() {
         toast('Share is unavailable in this browser.');
       }
     }
+  }
+}
+
+function stopCinematicTour(showMessage=false) {
+  tourToken += 1;
+  if (els.tour) els.tour.innerHTML='<span class="spark">▶</span> Cinematic tour';
+  if (showMessage) toast('Cinematic tour stopped.');
+}
+
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+async function startCinematicTour() {
+  const token = ++tourToken;
+  if (els.tour) els.tour.innerHTML='<span class="spark">■</span> Stop tour';
+
+  const active = () => token === tourToken;
+  const wait = async (ms) => {
+    await sleep(ms);
+    return active();
+  };
+
+  setMode('earth');
+  toast('Cinematic tour started.');
+  if (!await wait(1400)) return;
+
+  const event = state.events.find(e => e.type==='earthquake' && Number(e.magnitude) >= 4) || state.events[0];
+  if (event) {
+    setMode('events');
+    await sleep(450);
+    if (!active()) return;
+    selectEvent(event);
+    if (!await wait(2800)) return;
+  }
+
+  setMode('system');
+  if (!await wait(1450)) return;
+  focusPlanet('saturn');
+  if (!await wait(3000)) return;
+
+  setMode('space');
+  if (!await wait(1500)) return;
+  focusStar('sirius');
+  if (!await wait(2700)) return;
+  focusStar('betelgeuse');
+  if (!await wait(2700)) return;
+
+  setMode('earth');
+  if (active()) {
+    tourToken += 1;
+    if (els.tour) els.tour.innerHTML='<span class="spark">▶</span> Cinematic tour';
+    toast('Tour complete — explore freely.');
   }
 }
 
@@ -278,8 +331,8 @@ async function loadEvents() {
   }
 }
 
-$$('.mode-btn').forEach(btn=>btn.addEventListener('click',()=>setMode(btn.dataset.mode)));
-$$('[data-mode-target]').forEach(btn=>btn.addEventListener('click',()=>setMode(btn.dataset.modeTarget)));
+$('.mode-btn').forEach(btn=>btn.addEventListener('click',()=>{ stopCinematicTour(); setMode(btn.dataset.mode); }));
+$('[data-mode-target]').forEach(btn=>btn.addEventListener('click',()=>{ stopCinematicTour(); setMode(btn.dataset.modeTarget); }));
 
 $$('.filter-chip').forEach(btn=>btn.addEventListener('click',()=>{
   state.filter=btn.dataset.filter;
@@ -291,6 +344,10 @@ $$('.filter-chip').forEach(btn=>btn.addEventListener('click',()=>{
 
 els.theme.addEventListener('click',()=>setTheme(state.theme==='dark'?'light':'dark'));
 els.share?.addEventListener('click',shareEarthPulse);
+els.tour?.addEventListener('click',()=>{
+  if (els.tour.textContent.includes('Stop')) stopCinematicTour(true);
+  else startCinematicTour();
+});
 $('#panelClose').addEventListener('click',()=>setMode('earth'));
 $('#detailClose').addEventListener('click',()=>els.detail.classList.remove('visible'));
 $('#weatherClose').addEventListener('click',()=>els.weather.classList.remove('visible'));
