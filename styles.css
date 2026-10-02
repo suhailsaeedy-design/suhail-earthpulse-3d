@@ -373,3 +373,229 @@ body[data-mode="space"] .space-hud { opacity:1; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration:.001ms!important; animation-iteration-count:1!important; scroll-behavior:auto!important; transition-duration:.001ms!important; }
 }
+
+
+/* EarthPulse v2 realistic exploration */
+.galaxy-card {
+  position:absolute;
+  top:auto;
+  bottom:calc(112px + var(--safe-bottom));
+  left:auto;
+  right:max(24px, calc((100vw - 1180px)/2));
+  width:min(390px, calc(100vw - 36px));
+  border-radius:22px;
+  padding:20px;
+  opacity:0;
+  transform:translate(15px,10px) scale(.96);
+  pointer-events:none!important;
+  transition:.3s cubic-bezier(.2,.8,.2,1);
+}
+.galaxy-card.visible { opacity:1; transform:translate(0,0) scale(1); pointer-events:auto!important; }
+.galaxy-card h3 { margin:8px 42px 5px 0; font-size:21px; letter-spacing:-.025em; }
+.galaxy-card p { color:var(--muted); font-size:11px; line-height:1.55; margin:0 0 14px; }
+.galaxy-facts { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:13px 0 11px; }
+.galaxy-facts div { padding:10px; border:1px solid var(--line); border-radius:12px; background:rgba(255,255,255,.03); }
+.galaxy-facts small { display:block; color:var(--muted); font-size:7px; letter-spacing:.1em; margin-bottom:4px; }
+.galaxy-facts strong { font-size:10px; line-height:1.3; }
+.galaxy-card > small { color:var(--muted); font-size:8px; line-height:1.4; }
+
+.galaxy-picker {
+  pointer-events:auto;
+  position:absolute;
+  left:max(32px,calc((100vw - 1180px)/2));
+  bottom:calc(194px + var(--safe-bottom));
+  display:flex;
+  gap:8px;
+  max-width:calc(100vw - 64px);
+  overflow:auto;
+  scrollbar-width:none;
+}
+.galaxy-picker::-webkit-scrollbar { display:none; }
+.galaxy-pick {
+  flex:0 0 auto;
+  width:160px;
+  min-height:68px;
+  text-align:left;
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:11px;
+  background:linear-gradient(145deg,rgba(106,126,255,.13),rgba(255,255,255,.025)),var(--panel);
+  color:var(--text);
+  cursor:pointer;
+  backdrop-filter:blur(16px);
+  transition:.2s;
+}
+.galaxy-pick:hover,.galaxy-pick.active {
+  transform:translateY(-3px);
+  border-color:rgba(128,202,255,.48);
+  box-shadow:0 12px 34px rgba(0,0,0,.24),0 0 28px color-mix(in srgb,var(--galaxy-color,#84c9ff) 20%,transparent);
+}
+.galaxy-pick i {
+  display:inline-block;
+  width:9px;
+  height:9px;
+  border-radius:50%;
+  background:var(--galaxy-color,#84c9ff);
+  box-shadow:0 0 16px var(--galaxy-color,#84c9ff);
+  margin-right:6px;
+}
+.galaxy-pick strong { font-size:11px; }
+.galaxy-pick small { display:block; color:var(--muted); margin-top:6px; font-size:8px; }
+
+body[data-mode="system"] .solar-title h2 {
+  background:linear-gradient(90deg,#fff0bd,#ffd47b 46%,#9edaff);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+body[data-mode="system"] .planet-pick {
+  background:
+    radial-gradient(circle at 15% 10%, color-mix(in srgb,var(--planet-color,#fff) 16%,transparent), transparent 48%),
+    linear-gradient(145deg,rgba(255,255,255,.08),rgba(255,255,255,.02)),
+    var(--panel);
+}
+body[data-mode="system"] .planet-pick.active {
+  border-color:color-mix(in srgb,var(--planet-color,#fff) 65%,white);
+  box-shadow:0 12px 38px rgba(0,0,0,.28),0 0 28px color-mix(in srgb,var(--planet-color,#fff) 24%,transparent);
+}
+
+/* Full-screen free NASA satellite surface */
+.satellite-shell {
+  position:fixed;
+  inset:0;
+  z-index:1;
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  background:#050914;
+  transition:opacity .28s ease,visibility .28s;
+}
+.satellite-shell[aria-hidden="false"] {
+  opacity:1;
+  visibility:visible;
+  pointer-events:auto;
+}
+.satellite-map { position:absolute; inset:0; background:#07101d; }
+.satellite-map .leaflet-control-attribution {
+  background:rgba(3,7,16,.72)!important;
+  color:#aebbd1!important;
+  font-size:9px!important;
+  backdrop-filter:blur(10px);
+}
+.satellite-map .leaflet-control-attribution a { color:#8fdcff!important; }
+.satellite-map .leaflet-control-zoom {
+  border:1px solid rgba(255,255,255,.15)!important;
+  border-radius:14px!important;
+  overflow:hidden;
+  box-shadow:0 12px 35px rgba(0,0,0,.28)!important;
+}
+.satellite-map .leaflet-control-zoom a {
+  background:rgba(8,15,31,.86)!important;
+  color:#fff!important;
+  border-color:rgba(255,255,255,.12)!important;
+  width:42px!important;
+  height:42px!important;
+  line-height:42px!important;
+}
+.satellite-tools {
+  position:absolute;
+  left:50%;
+  top:calc(112px + var(--safe-top));
+  transform:translateX(-50%);
+  width:min(900px,calc(100vw - 36px));
+  min-height:54px;
+  border-radius:17px;
+  padding:7px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  z-index:401;
+}
+.sat-tool-btn,.sat-layer,.satellite-selection button {
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.055);
+  color:var(--text);
+  border-radius:12px;
+  cursor:pointer;
+  font-weight:750;
+}
+.sat-tool-btn { height:40px; padding:0 14px; }
+.sat-layer-group { display:flex; gap:5px; flex:1; }
+.sat-layer { height:40px; padding:0 12px; font-size:10px; color:var(--muted); }
+.sat-layer.active { color:#fff; background:linear-gradient(135deg,rgba(37,119,245,.88),rgba(77,78,216,.86)); border-color:rgba(113,197,255,.48); }
+.sat-source { display:flex; flex-direction:column; gap:2px; padding:0 10px; min-width:126px; }
+.sat-source strong { font-size:9px; letter-spacing:.12em; color:var(--cyan); }
+.sat-source span { color:var(--muted); font-size:8px; }
+
+.satellite-selection {
+  position:absolute;
+  left:50%;
+  bottom:calc(22px + var(--safe-bottom));
+  transform:translate(-50%,18px);
+  width:min(540px,calc(100vw - 32px));
+  border-radius:18px;
+  padding:10px;
+  display:grid;
+  grid-template-columns:1fr auto auto;
+  align-items:center;
+  gap:8px;
+  opacity:0;
+  pointer-events:none;
+  transition:.25s;
+  z-index:401;
+}
+.satellite-selection.visible { opacity:1; transform:translate(-50%,0); pointer-events:auto; }
+.satellite-selection div { min-width:0; padding:0 6px; }
+.satellite-selection span { display:block; font-size:7px; letter-spacing:.14em; color:var(--cyan); margin-bottom:4px; }
+.satellite-selection strong { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:10px; }
+.satellite-selection button { height:40px; padding:0 12px; font-size:9px; }
+.satellite-note {
+  position:absolute;
+  right:18px;
+  bottom:82px;
+  z-index:401;
+  padding:9px 12px;
+  border-radius:13px;
+  color:var(--muted);
+  font-size:8px;
+}
+body.satellite-open .hero,
+body.satellite-open .metrics,
+body.satellite-open .explorer,
+body.satellite-open .detail-card,
+body.satellite-open .weather-card,
+body.satellite-open .planet-card,
+body.satellite-open .star-card,
+body.satellite-open .galaxy-card,
+body.satellite-open .solar-hud,
+body.satellite-open .space-hud,
+body.satellite-open .mode-dock,
+body.satellite-open .interaction-hint { opacity:0!important; pointer-events:none!important; }
+
+@media (max-width:720px) {
+  .galaxy-card { left:10px; right:10px; width:auto; bottom:calc(80px + var(--safe-bottom)); transform:translateY(25px) scale(.97); }
+  .galaxy-card.visible { transform:translateY(0) scale(1); }
+  .galaxy-picker { left:14px; bottom:calc(154px + var(--safe-bottom)); max-width:calc(100vw - 28px); }
+  .galaxy-pick { width:138px; min-height:62px; }
+  .star-picker { bottom:calc(82px + var(--safe-bottom)); }
+  .solar-title,.space-title { top:calc(130px + var(--safe-top)); }
+  .solar-title h2,.space-title h2 { font-size:27px; }
+  .satellite-tools {
+    top:calc(122px + var(--safe-top));
+    left:10px;
+    right:10px;
+    width:auto;
+    transform:none;
+    flex-wrap:wrap;
+  }
+  .sat-tool-btn { order:1; }
+  .sat-layer-group { order:2; min-width:0; }
+  .sat-source { order:3; width:100%; flex-direction:row; justify-content:space-between; padding:2px 8px 3px; }
+  .sat-layer { flex:1; padding:0 8px; }
+  .satellite-selection {
+    bottom:calc(14px + var(--safe-bottom));
+    grid-template-columns:1fr auto auto;
+  }
+  .satellite-note { display:none; }
+  body.satellite-open .search-box { pointer-events:auto!important; opacity:1!important; }
+}
