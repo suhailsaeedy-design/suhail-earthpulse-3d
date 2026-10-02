@@ -60,7 +60,7 @@
       <section class="hero" id="heroPanel">
         <div class="eyebrow"><span></span> LIVE PLANET INTELLIGENCE</div>
         <h1>Watch our world<br/><span>come alive.</span></h1>
-        <p>Explore a cinematic 3D Earth, current natural events, local weather and an immersive galaxy — all in one live experience.</p>
+        <p>Explore a cinematic 3D Earth, current natural events, local weather, the Solar System and an immersive galaxy — all in one live experience.</p>
         <div class="hero-actions">
           <button class="primary-btn" type="button" data-mode-target="events">
             <span>Explore live events</span>
@@ -143,6 +143,15 @@
         <small class="weather-coords" id="weatherCoords"></small>
       </section>
 
+      <section class="planet-card glass-panel" id="planetCard" aria-live="polite" aria-hidden="true">
+        <button class="detail-close" id="planetClose" type="button" aria-label="Close planet details">×</button>
+        <span class="detail-type">SOLAR SYSTEM</span>
+        <h3 id="planetName">Earth</h3>
+        <p id="planetSubtitle">Select a planet for a cinematic close-up.</p>
+        <div class="planet-facts" id="planetFacts"></div>
+        <small>Planet sizes and orbit spacing are intentionally compressed for visualization and are not to scale.</small>
+      </section>
+
       <section class="star-card glass-panel" id="starCard" aria-live="polite" aria-hidden="true">
         <button class="detail-close" id="starClose" type="button" aria-label="Close star details">×</button>
         <span class="detail-type">FEATURED STAR</span>
@@ -151,6 +160,15 @@
         <div class="star-facts" id="starFacts"></div>
         <small>Close-up views are scientific visualizations, not live camera imagery.</small>
       </section>
+
+      <div class="solar-hud" id="solarHud" aria-hidden="true">
+        <div class="solar-title">
+          <span>SOLAR SYSTEM MODE</span>
+          <h2>Fly from planet to planet.</h2>
+          <p>Explore the Sun and eight planets in a cinematic compressed-scale model.</p>
+        </div>
+        <div class="planet-picker" id="planetPicker"></div>
+      </div>
 
       <div class="space-hud" id="spaceHud" aria-hidden="true">
         <div class="space-title">
@@ -170,6 +188,9 @@
         </button>
         <button class="mode-btn" type="button" data-mode="weather">
           <span class="mode-icon">☁</span><span>Weather</span>
+        </button>
+        <button class="mode-btn" type="button" data-mode="system">
+          <span class="mode-icon">☉</span><span>System</span>
         </button>
         <button class="mode-btn" type="button" data-mode="space">
           <span class="mode-icon">✦</span><span>Galaxy</span>
