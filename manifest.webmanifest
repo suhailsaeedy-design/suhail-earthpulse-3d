@@ -1,12 +1,80 @@
 {
-  "name": "EarthPulse 3D",
+  "id": "./",
+  "name": "EarthPulse 3D — Suhail Labs",
   "short_name": "EarthPulse",
-  "description": "Interactive live Earth, natural events, weather and space exploration by Suhail Labs.",
-  "start_url": "./",
+  "description": "Realistic Earth, satellite imagery, live events, weather, Solar System, Moon and galaxy exploration by Suhail Labs.",
+  "start_url": "./?source=pwa",
+  "scope": "./",
   "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone"
+  ],
+  "orientation": "any",
   "background_color": "#030611",
   "theme_color": "#050812",
+  "categories": [
+    "education",
+    "science",
+    "utilities"
+  ],
+  "prefer_related_applications": false,
   "icons": [
-    {"src":"./favicon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "3D Earth",
+      "short_name": "Earth",
+      "url": "./?mode=earth",
+      "icons": [
+        {
+          "src": "./icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Solar System",
+      "short_name": "System",
+      "url": "./?mode=system",
+      "icons": [
+        {
+          "src": "./icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Galaxy",
+      "short_name": "Galaxy",
+      "url": "./?mode=space",
+      "icons": [
+        {
+          "src": "./icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
   ]
 }
