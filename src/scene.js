@@ -229,6 +229,98 @@ export class EarthSpaceScene {
     });
   }
 
+  buildSolarSystem() {
+    this.solarGroup = new THREE.Group();
+    this.solarGroup.visible = false;
+    this.scene.add(this.solarGroup);
+
+    const sunCore = new THREE.Mesh(
+      new THREE.SphereGeometry(.78, 64, 40),
+      new THREE.MeshBasicMaterial({color:0xffcf75})
+    );
+    this.solarGroup.add(sunCore);
+
+    const sunGlow = new THREE.Sprite(new THREE.SpriteMaterial({
+      map:this.glowTexture,
+      color:0xffb84d,
+      transparent:true,
+      opacity:.78,
+      depthWrite:false,
+      blending:THREE.AdditiveBlending
+    }));
+    sunGlow.scale.setScalar(6.4);
+    this.solarGroup.add(sunGlow);
+
+    const solarLight = new THREE.PointLight(0xffddb0, 12, 45, 1.4);
+    this.solarGroup.add(solarLight);
+
+    PLANETS.forEach((planet,index) => {
+      const orbitPoints=[];
+      for(let i=0;i<160;i++) {
+        const a=(i/160)*Math.PI*2;
+        orbitPoints.push(new THREE.Vector3(Math.cos(a)*planet.orbit,0,Math.sin(a)*planet.orbit));
+      }
+
+      const orbitGeometry=new THREE.BufferGeometry().setFromPoints(orbitPoints);
+      const orbitLine=new THREE.LineLoop(
+        orbitGeometry,
+        new THREE.LineBasicMaterial({color:0x8ba7d7,transparent:true,opacity:.12})
+      );
+      this.solarGroup.add(orbitLine);
+
+      const pivot=new THREE.Group();
+      pivot.rotation.y=index*.72+.35;
+      pivot.userData.baseAngle=pivot.rotation.y;
+      pivot.userData.speed=planet.speed;
+
+      const group=new THREE.Group();
+      group.position.set(planet.orbit,0,0);
+      group.userData.planetId=planet.id;
+
+      const core=new THREE.Mesh(
+        new THREE.SphereGeometry(planet.size,40,28),
+        new THREE.MeshPhongMaterial({
+          color:planet.threeColor,
+          shininess:planet.id==='earth' ? 30 : 12,
+          emissive:new THREE.Color(planet.threeColor).multiplyScalar(.11)
+        })
+      );
+      core.userData.planetId=planet.id;
+      group.add(core);
+      this.planetMeshes.push(core);
+
+      const glow=new THREE.Sprite(new THREE.SpriteMaterial({
+        map:this.glowTexture,
+        color:planet.threeColor,
+        transparent:true,
+        opacity:.28,
+        depthWrite:false,
+        blending:THREE.AdditiveBlending
+      }));
+      glow.scale.setScalar(Math.max(.8,planet.size*3.5));
+      group.add(glow);
+
+      if(planet.rings) {
+        const ring=new THREE.Mesh(
+          new THREE.RingGeometry(planet.size*1.35,planet.size*2.05,72),
+          new THREE.MeshBasicMaterial({
+            color:0xd8c7a3,
+            transparent:true,
+            opacity:.55,
+            side:THREE.DoubleSide,
+            depthWrite:false
+          })
+        );
+        ring.rotation.x=Math.PI/2.28;
+        group.add(ring);
+      }
+
+      pivot.add(group);
+      this.solarGroup.add(pivot);
+      this.planetNodes.set(planet.id,{pivot,group,data:planet});
+    });
+  }
+
   bindEvents() {
     addEventListener('resize', () => this.resize(), {passive:true});
     this.canvas.addEventListener('pointerup', (e) => this.onPointer(e));
