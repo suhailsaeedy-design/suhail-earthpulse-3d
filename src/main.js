@@ -1,5 +1,6 @@
 import { EarthSpaceScene } from './scene.js';
 import { SatelliteExplorer } from './satellite.js';
+import { setupPWA } from './pwa.js';
 import { fetchAllEvents, fetchWeather, searchLocation } from './api.js';
 import { FEATURED_STARS, PLANETS, MOON, GALAXIES, EVENT_CSS_COLORS, formatCoord, relativeTime, weatherCodeLabel } from './data.js';
 
@@ -22,6 +23,13 @@ const els = {
   toast: $('#toast'),
   theme: $('#themeToggle'),
   share: $('#shareButton'),
+  install: $('#installButton'),
+  about: $('#aboutButton'),
+  aboutInstall: $('#aboutInstallButton'),
+  aboutModal: $('#aboutModal'),
+  installModal: $('#installModal'),
+  installInstructions: $('#installInstructions'),
+  livePill: $('.live-pill'),
   tour: $('#tourButton'),
   searchForm: $('#locationSearch'),
   searchInput: $('#searchInput'),
@@ -85,6 +93,10 @@ window.__earthpulseStarted = true;
 let tourToken = 0;
 
 function openSatellite(lat=20,lon=0,zoom=2) {
+  if(!navigator.onLine) {
+    toast('Satellite imagery needs internet. Offline 3D Earth, System and Galaxy are still available.');
+    return;
+  }
   stopCinematicTour();
   state.satelliteOpen=true;
   els.body.classList.add('satellite-open');
@@ -107,6 +119,60 @@ function toast(message, duration=2600) {
   clearTimeout(toast.timer);
   toast.timer=setTimeout(()=>els.toast.classList.remove('visible'),duration);
 }
+
+function openModal(id) {
+  const modal=document.getElementById(id);
+  if(!modal) return;
+  modal.setAttribute('aria-hidden','false');
+  document.body.classList.add('modal-open');
+}
+
+function closeModal(id) {
+  const modal=document.getElementById(id);
+  if(!modal) return;
+  modal.setAttribute('aria-hidden','true');
+  if(!document.querySelector('.app-modal[aria-hidden="false"]')) document.body.classList.remove('modal-open');
+}
+
+function showInstallInstructions(platform) {
+  if(!els.installInstructions) return;
+  if(platform==='ios') {
+    els.installInstructions.innerHTML=`
+      <div><b>1</b><span>Open EarthPulse in Safari if you are viewing it inside another app.</span></div>
+      <div><b>2</b><span>Tap the Safari Share button.</span></div>
+      <div><b>3</b><span>Choose <strong>Add to Home Screen</strong>, then tap <strong>Add</strong>.</span></div>`;
+  } else if(platform==='android') {
+    els.installInstructions.innerHTML=`
+      <div><b>1</b><span>Open the browser menu.</span></div>
+      <div><b>2</b><span>Choose <strong>Install app</strong> or <strong>Add to Home screen</strong>.</span></div>
+      <div><b>3</b><span>Confirm the installation.</span></div>`;
+  } else {
+    els.installInstructions.innerHTML=`
+      <div><b>1</b><span>Open your browser menu.</span></div>
+      <div><b>2</b><span>Choose the available <strong>Install app</strong>, <strong>Add to Dock</strong>, or <strong>Add to Home Screen</strong> option.</span></div>
+      <div><b>3</b><span>Confirm to install EarthPulse as a standalone app.</span></div>`;
+  }
+  openModal('installModal');
+}
+
+const pwa = setupPWA({
+  toast,
+  onInstallInstructions: showInstallInstructions,
+  onOnlineChange: (online) => {
+    if(els.livePill) {
+      els.livePill.innerHTML=online ? '<span></span> LIVE DATA' : '<span></span> OFFLINE';
+      els.livePill.classList.toggle('offline',!online);
+    }
+    if(!online) els.dataStatus.textContent='OFFLINE';
+  },
+  onInstalled: () => {
+    if(els.install) els.install.hidden=true;
+    if(els.aboutInstall) {
+      els.aboutInstall.disabled=true;
+      els.aboutInstall.innerHTML='<span>Installed</span>';
+    }
+  }
+});
 
 async function shareEarthPulse() {
   const shareData = {
@@ -292,6 +358,11 @@ async function loadWeather(lat,lon,place='Selected location') {
   els.weatherTemp.textContent='—°';
   els.weatherStats.innerHTML='<div><small>STATUS</small><strong>SYNCING</strong></div>';
   els.weatherCoords.textContent=`${formatCoord(lat,'N','S')} · ${formatCoord(lon,'E','W')}`;
+  if(!navigator.onLine) {
+    els.weatherCondition.textContent='Weather needs an internet connection.';
+    els.weatherStats.innerHTML='<div><small>STATUS</small><strong>OFFLINE</strong></div>';
+    return;
+  }
   try {
     const data=await fetchWeather(lat,lon);
     const c=data.current || {};
@@ -421,6 +492,14 @@ $$('.filter-chip').forEach(btn=>btn.addEventListener('click',()=>{
 
 els.theme.addEventListener('click',()=>setTheme(state.theme==='dark'?'light':'dark'));
 els.share?.addEventListener('click',shareEarthPulse);
+els.install?.addEventListener('click',()=>pwa.requestInstall());
+els.aboutInstall?.addEventListener('click',()=>pwa.requestInstall());
+els.about?.addEventListener('click',()=>openModal('aboutModal'));
+$('[data-modal-close]').forEach(btn=>btn.addEventListener('click',()=>closeModal(btn.dataset.modalClose)));
+document.addEventListener('keydown',(event)=>{
+  if(event.key!=='Escape') return;
+  $('.app-modal[aria-hidden="false"]').forEach(modal=>closeModal(modal.id));
+});
 els.satelliteButton?.addEventListener('click',()=>openSatellite());
 els.satelliteClose?.addEventListener('click',()=>closeSatellite());
 els.satelliteGlobe?.addEventListener('click',()=>{
@@ -456,6 +535,10 @@ els.searchForm.addEventListener('submit',async(e)=>{
   e.preventDefault();
   const query=els.searchInput.value.trim();
   if(!query) return;
+  if(!navigator.onLine) {
+    toast('You are offline. Location search needs internet.');
+    return;
+  }
   const old=els.searchInput.value;
   els.searchInput.value='Searching…';
   els.searchInput.disabled=true;
@@ -491,7 +574,8 @@ window.addEventListener('earthpulse:planet',(e)=>focusPlanet(e.detail.id));
 window.addEventListener('earthpulse:galaxy',(e)=>focusGalaxy(e.detail.id));
 
 setTheme(state.theme);
-setMode('earth');
+const requestedMode=new URLSearchParams(location.search).get('mode');
+setMode(['earth','events','weather','system','space'].includes(requestedMode) ? requestedMode : 'earth');
 renderGalaxyPicker();
 renderStarPicker();
 renderPlanetPicker();
