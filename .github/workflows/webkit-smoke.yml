@@ -24,11 +24,25 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "24"
-      - name: Install Playwright WebKit
+      - name: Install Playwright WebKit and build tools
         run: |
           npm init -y >/dev/null 2>&1
-          npm install -D @playwright/test@1.55.0
+          npm install -D @playwright/test@1.55.0 esbuild@0.24.2 leaflet@1.9.4
           npx playwright install --with-deps webkit
+      - name: Build exact source runtime
+        run: |
+          npx esbuild src/main.js \
+            --bundle \
+            --format=iife \
+            --platform=browser \
+            --target=safari14,ios14 \
+            --outfile=app.bundle.js \
+            --loader:.png=file \
+            --asset-names=assets/[name]-[hash] \
+            --minify \
+            --legal-comments=none
+          test -s app.bundle.js
+          test -s app.bundle.css
       - name: Test local production files in WebKit
         run: |
           python3 -m http.server 4173 >/tmp/earthpulse-http.log 2>&1 &
