@@ -16,6 +16,9 @@
 - Featured-star fly-to experiences for Sirius, Vega, Betelgeuse and Proxima Centauri
 - Light and Night themes
 - Responsive mobile-first UI for iPhone, Android and desktop browsers
+- One-tap cinematic tour for demos and screen recording
+- Native mobile share action with clipboard fallback
+- Installable/offline application shell for the local interface
 - Zero paid backend and zero database requirement
 - Automatic GitHub Pages deployment workflow
 
