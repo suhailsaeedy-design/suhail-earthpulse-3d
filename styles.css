@@ -599,3 +599,236 @@ body.satellite-open .interaction-hint { opacity:0!important; pointer-events:none
   .satellite-note { display:none; }
   body.satellite-open .search-box { pointer-events:auto!important; opacity:1!important; }
 }
+
+
+/* EarthPulse PWA install + About */
+.live-pill.offline {
+  color:#ffbd72;
+  border-color:rgba(255,189,114,.22);
+  background:rgba(255,189,114,.08);
+}
+.live-pill.offline span {
+  background:#ffbd72;
+  box-shadow:0 0 0 5px rgba(255,189,114,.08),0 0 14px rgba(255,189,114,.55);
+  animation:none;
+}
+html.pwa-installed .install-icon-btn { display:none; }
+
+.app-modal {
+  position:fixed;
+  inset:0;
+  z-index:900;
+  display:grid;
+  place-items:center;
+  padding:24px;
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transition:opacity .26s ease,visibility .26s;
+}
+.app-modal[aria-hidden="false"] {
+  opacity:1;
+  visibility:visible;
+  pointer-events:auto;
+}
+.modal-backdrop {
+  position:absolute;
+  inset:0;
+  border:0;
+  background:
+    radial-gradient(circle at 50% 38%,rgba(35,83,179,.18),transparent 38%),
+    rgba(1,3,9,.76);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+}
+.about-panel,.install-panel {
+  position:relative;
+  z-index:1;
+  width:min(760px,calc(100vw - 32px));
+  max-height:min(82vh,720px);
+  overflow:auto;
+  border-radius:28px;
+  padding:26px;
+  box-shadow:0 35px 100px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.12);
+}
+.about-panel {
+  display:grid;
+  grid-template-columns:minmax(180px,260px) 1fr;
+  gap:28px;
+  align-items:center;
+}
+.modal-close {
+  position:absolute;
+  z-index:3;
+  top:14px;
+  right:14px;
+  width:38px;
+  height:38px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.06);
+  color:var(--text);
+  font-size:22px;
+  cursor:pointer;
+}
+.about-portrait-wrap {
+  position:relative;
+  aspect-ratio:4/5;
+  min-height:260px;
+  border-radius:24px;
+  overflow:hidden;
+  border:1px solid rgba(118,220,255,.26);
+  background:#07101f;
+  box-shadow:0 22px 55px rgba(0,0,0,.35),0 0 45px rgba(59,132,255,.12);
+}
+.about-portrait-wrap img {
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+.about-orbit {
+  position:absolute;
+  left:-18%;
+  right:-18%;
+  bottom:10%;
+  height:28%;
+  border:1px solid rgba(111,231,255,.42);
+  border-radius:50%;
+  transform:rotate(-11deg);
+  box-shadow:0 0 22px rgba(95,205,255,.16);
+}
+.about-kicker {
+  display:block;
+  color:var(--cyan);
+  font-size:9px;
+  font-weight:850;
+  letter-spacing:.2em;
+  margin-bottom:9px;
+}
+.about-copy h2,.install-panel h2 {
+  margin:0 0 12px;
+  font-size:clamp(28px,4vw,42px);
+  line-height:1;
+  letter-spacing:-.045em;
+}
+.about-copy p {
+  margin:0;
+  color:var(--muted);
+  line-height:1.72;
+  font-size:12px;
+}
+.about-badges {
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  margin:18px 0;
+}
+.about-badges span,.offline-capabilities span {
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.045);
+  border-radius:999px;
+  padding:7px 10px;
+  color:var(--text);
+  font-size:9px;
+  font-weight:720;
+}
+.about-actions {
+  display:flex;
+  align-items:center;
+  gap:9px;
+  margin:8px 0 14px;
+}
+.about-note,.install-panel > small {
+  display:block;
+  color:var(--muted);
+  font-size:9px;
+  line-height:1.55;
+}
+.install-panel {
+  width:min(520px,calc(100vw - 32px));
+  text-align:center;
+}
+.install-app-icon {
+  width:84px;
+  height:84px;
+  margin:0 auto 16px;
+  border-radius:22px;
+  overflow:hidden;
+  box-shadow:0 16px 45px rgba(38,95,234,.28),0 0 44px rgba(83,218,255,.15);
+}
+.install-app-icon img { width:100%;height:100%;display:block; }
+.install-steps {
+  display:grid;
+  gap:9px;
+  margin:19px 0;
+  text-align:left;
+}
+.install-steps div {
+  display:grid;
+  grid-template-columns:32px 1fr;
+  gap:10px;
+  align-items:center;
+  padding:11px 12px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:rgba(255,255,255,.035);
+  color:var(--muted);
+  font-size:10px;
+  line-height:1.45;
+}
+.install-steps b {
+  width:30px;
+  height:30px;
+  display:grid;
+  place-items:center;
+  border-radius:10px;
+  color:#fff;
+  background:linear-gradient(135deg,#2874f8,#654ddb);
+}
+.install-steps strong { color:var(--text); }
+.offline-capabilities {
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:6px;
+  padding:14px 0;
+  margin:0 0 12px;
+  border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+}
+.offline-capabilities strong {
+  width:100%;
+  font-size:9px;
+  letter-spacing:.12em;
+  color:var(--cyan);
+  margin-bottom:3px;
+}
+body.modal-open { overflow:hidden; }
+
+@media (max-width:720px) {
+  .top-actions { gap:6px; }
+  .icon-btn { width:38px;height:38px;border-radius:12px; }
+  .icon-btn svg { width:17px;height:17px; }
+  .about-panel {
+    grid-template-columns:1fr;
+    gap:18px;
+    padding:18px;
+    padding-top:54px;
+    width:calc(100vw - 22px);
+    max-height:calc(100vh - 30px - var(--safe-top) - var(--safe-bottom));
+  }
+  .about-portrait-wrap {
+    width:min(210px,62vw);
+    min-height:0;
+    margin:0 auto;
+  }
+  .about-copy { text-align:center; }
+  .about-badges,.about-actions { justify-content:center; }
+  .install-panel {
+    padding:22px 18px;
+    padding-top:52px;
+    width:calc(100vw - 22px);
+  }
+}
