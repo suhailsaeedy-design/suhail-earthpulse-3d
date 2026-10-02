@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { EVENT_COLORS, FEATURED_STARS } from './data.js';
+import { EVENT_COLORS, FEATURED_STARS, PLANETS } from './data.js';
 
 const EARTH_RADIUS = 2.35;
 
@@ -38,12 +38,23 @@ function makeEarthFallbackTexture() {
   return new THREE.CanvasTexture(canvas);
 }
 
+function sunCorePulse(group,t) {
+  const glow=group?.children?.[1];
+  if(!glow) return;
+  const s=6.4 + Math.sin(t*1.7)*.28;
+  glow.scale.setScalar(s);
+  glow.material.opacity=.7 + Math.sin(t*1.3)*.08;
+}
+
 export class EarthSpaceScene {
   constructor(canvas) {
     this.canvas = canvas;
     this.mode = 'earth';
     this.eventMeshes = [];
     this.starMeshes = new Map();
+    this.planetNodes = new Map();
+    this.planetMeshes = [];
+    this.solarPaused = false;
     this.pointer = new THREE.Vector2();
     this.raycaster = new THREE.Raycaster();
     this.clock = new THREE.Clock();
@@ -78,6 +89,7 @@ export class EarthSpaceScene {
     this.buildGalaxy();
     this.buildEarth();
     this.buildFeaturedStars();
+    this.buildSolarSystem();
     this.bindEvents();
     this.animate();
   }
@@ -264,15 +276,24 @@ export class EarthSpaceScene {
   setMode(mode) {
     this.mode=mode;
     const space=mode==='space';
-    this.controls.autoRotate=!space;
-    this.controls.minDistance=space ? 1.3 : 3.3;
-    this.controls.maxDistance=space ? 90 : 15;
-    this.earthGroup.visible=!space;
+    const system=mode==='system';
+
+    this.controls.autoRotate=!space && !system;
+    this.controls.minDistance=space ? 1.3 : system ? 2.2 : 3.3;
+    this.controls.maxDistance=space ? 90 : system ? 35 : 15;
+
+    this.earthGroup.visible=!space && !system;
+    this.solarGroup.visible=system;
     this.featuredGroup.children.forEach((x)=>x.visible=space);
-    this.galaxy.material.opacity=space ? .72 : .12;
-    this.starField.material.opacity=space ? 1 : .9;
-    this.scene.fog.density=space ? .004 : .012;
-    if(space) {
+
+    this.galaxy.material.opacity=space ? .72 : system ? .28 : .12;
+    this.starField.material.opacity=space || system ? 1 : .9;
+    this.scene.fog.density=space ? .004 : system ? .006 : .012;
+
+    if(system) {
+      this.solarPaused=false;
+      this.animateCamera(new THREE.Vector3(0,7.8,18.5),new THREE.Vector3(0,0,0),1300);
+    } else if(space) {
       this.animateCamera(new THREE.Vector3(0,8,34),new THREE.Vector3(0,0,-5),1300);
     } else {
       this.animateCamera(new THREE.Vector3(.8,.35,7.6),new THREE.Vector3(0,0,0),1100);
@@ -304,6 +325,20 @@ export class EarthSpaceScene {
     this.animateCamera(cameraPos,target,1250);
   }
 
+  focusPlanet(id) {
+    const node=this.planetNodes.get(id);
+    if(!node) return;
+    this.solarPaused=true;
+    const target=new THREE.Vector3();
+    node.group.getWorldPosition(target);
+    const fromSun=target.clone().normalize();
+    const distance=Math.max(1.45,node.data.size*5.4+1.0);
+    const cameraPos=target.clone().add(fromSun.multiplyScalar(distance));
+    cameraPos.y += Math.max(.35,node.data.size*1.2);
+    this.animateCamera(cameraPos,target,1200);
+  }
+
+
   animateCamera(position,target,duration=1000) {
     this.tween={
       start:performance.now(), duration,
@@ -334,6 +369,13 @@ export class EarthSpaceScene {
     this.pointer.x=((e.clientX-rect.left)/rect.width)*2-1;
     this.pointer.y=-((e.clientY-rect.top)/rect.height)*2+1;
     this.raycaster.setFromCamera(this.pointer,this.camera);
+
+    if(this.mode==='system') {
+      const hits=this.raycaster.intersectObjects(this.planetMeshes,false);
+      const id=hits[0]?.object?.userData?.planetId;
+      if(id) window.dispatchEvent(new CustomEvent('earthpulse:planet',{detail:{id}}));
+      return;
+    }
 
     if(this.mode==='space') {
       const stars=[];
@@ -403,6 +445,16 @@ export class EarthSpaceScene {
       ring.scale.setScalar(s);
       ring.material.opacity=.12+(1-pulse)*.42;
     });
+
+    if(this.mode==='system') {
+      this.planetNodes.forEach(({pivot,group},id)=>{
+        const node=this.planetNodes.get(id);
+        if(!this.solarPaused) pivot.rotation.y=node.pivot.userData.baseAngle + t*node.pivot.userData.speed*.11;
+        const core=group.children[0];
+        if(core) core.rotation.y += .003;
+      });
+      sunCorePulse(this.solarGroup,t);
+    }
 
     if(this.mode==='space') {
       this.featuredGroup.children.forEach((g,index)=>{
