@@ -82,6 +82,7 @@ export const PLANETS = [
     moons: '0',
     color: '#a9a39a',
     threeColor: 0xa9a39a,
+    texture: './public/textures/mercury.jpg',
     orbit: 2.6,
     size: 0.18,
     speed: 0.48
@@ -96,6 +97,7 @@ export const PLANETS = [
     moons: '0',
     color: '#d9b36c',
     threeColor: 0xd9b36c,
+    texture: './public/textures/venus.jpg',
     orbit: 3.3,
     size: 0.26,
     speed: 0.35
@@ -110,6 +112,9 @@ export const PLANETS = [
     moons: '1',
     color: '#5d9dff',
     threeColor: 0x5d9dff,
+    texture: './public/textures/earth-day.jpg',
+    nightTexture: './public/textures/earth-night.jpg',
+    cloudTexture: './public/textures/earth-clouds.jpg',
     orbit: 4.0,
     size: 0.28,
     speed: 0.30
@@ -124,6 +129,7 @@ export const PLANETS = [
     moons: '2',
     color: '#d56d4c',
     threeColor: 0xd56d4c,
+    texture: './public/textures/mars.jpg',
     orbit: 4.8,
     size: 0.22,
     speed: 0.24
@@ -138,6 +144,7 @@ export const PLANETS = [
     moons: 'Many',
     color: '#d5b38a',
     threeColor: 0xd5b38a,
+    texture: './public/textures/jupiter.jpg',
     orbit: 6.3,
     size: 0.62,
     speed: 0.13
@@ -152,6 +159,8 @@ export const PLANETS = [
     moons: 'Many',
     color: '#e3c982',
     threeColor: 0xe3c982,
+    texture: './public/textures/saturn.jpg',
+    ringTexture: './public/textures/saturn-ring.png',
     orbit: 8.2,
     size: 0.55,
     speed: 0.095,
@@ -167,6 +176,7 @@ export const PLANETS = [
     moons: 'Many',
     color: '#8fd8dc',
     threeColor: 0x8fd8dc,
+    texture: './public/textures/uranus.jpg',
     orbit: 10.0,
     size: 0.42,
     speed: 0.065
@@ -181,9 +191,60 @@ export const PLANETS = [
     moons: 'Many',
     color: '#5277e8',
     threeColor: 0x5277e8,
+    texture: './public/textures/neptune.jpg',
     orbit: 11.7,
     size: 0.41,
     speed: 0.052
+  }
+];
+
+export const MOON = {
+  id: 'moon',
+  name: 'Moon',
+  subtitle: "Earth's natural satellite, shown with a real mapped surface texture.",
+  distance: '384,400 km from Earth',
+  diameter: '3,474 km',
+  year: '27.3 Earth days',
+  moons: '—',
+  color: '#d7d8db',
+  threeColor: 0xd7d8db,
+  texture: './public/textures/moon.jpg',
+  size: 0.095
+};
+
+export const GALAXIES = [
+  {
+    id: 'milky-way',
+    name: 'Milky Way',
+    subtitle: 'Our home barred spiral galaxy.',
+    distance: 'You are here',
+    diameter: '≈ 100,000 light-years',
+    stars: 'Hundreds of billions',
+    color: '#8fbaff',
+    position: [0, 0, -28],
+    scale: 10
+  },
+  {
+    id: 'andromeda',
+    name: 'Andromeda Galaxy',
+    subtitle: 'The nearest large galaxy to the Milky Way.',
+    distance: '≈ 2.5 million light-years',
+    diameter: '≈ 220,000 light-years',
+    stars: '≈ 1 trillion',
+    color: '#d5c3ff',
+    position: [34, 11, -52],
+    scale: 8
+  },
+  {
+    id: 'triangulum',
+    name: 'Triangulum Galaxy',
+    subtitle: 'A spiral galaxy in the Local Group.',
+    distance: '≈ 2.7 million light-years',
+    diameter: '≈ 60,000 light-years',
+    stars: 'Tens of billions',
+    color: '#87e8ff',
+    position: [-31, -8, -48],
+    scale: 5.5
   }
 ];
 
