@@ -9,10 +9,10 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: earthpulse-main-writes
+  group: earthpulse-reels-render
   cancel-in-progress: true
 
 jobs:
@@ -22,8 +22,6 @@ jobs:
     steps:
       - name: Checkout EarthPulse
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -36,23 +34,36 @@ jobs:
           npm install -D playwright@1.55.0
           npx playwright install --with-deps chromium
 
-      - name: Record real code and live website
+      - name: Record real code and real live website modes
         run: |
           rm -rf promo/raw
           mkdir -p promo/raw
           node tools/promo/record-reels.mjs
-          test -s promo/raw/code.webm
-          test -s promo/raw/site.webm
-          test -s promo/raw/site-trim.txt
-          SITE_TRIM="$(tr -d '\n\r ' < promo/raw/site-trim.txt)"
-          echo "SITE_TRIM=$SITE_TRIM" >> "$GITHUB_ENV"
+          test -s promo/raw/timings.json
+          for name in code earth satellite system galaxy about finale; do
+            test -s "promo/raw/$name.webm"
+          done
+          cat promo/raw/timings.json
 
-      - name: Encode 9x16 Reels master with safe margins
+      - name: Encode exact 1080x1920 Reels master with safe margins
         run: |
           sudo apt-get update -y >/dev/null
           sudo apt-get install -y ffmpeg >/dev/null
-          mkdir -p promo
-          ffmpeg -y             -i promo/raw/code.webm             -ss "$SITE_TRIM" -t 31 -i promo/raw/site.webm             -f lavfi -i "anullsrc=channel_layout=stereo:sample_rate=48000"             -filter_complex "[0:v]scale=800:1440:flags=lanczos,pad=1080:1920:140:240:color=0x030611,setsar=1,fps=30,setpts=PTS-STARTPTS[v0];[1:v]scale=800:1440:flags=lanczos,pad=1080:1920:140:240:color=0x030611,setsar=1,fps=30,setpts=PTS-STARTPTS[v1];[v0][v1]concat=n=2:v=1:a=0[v]"             -map "[v]" -map 2:a:0             -c:v libx264 -profile:v high -level:v 4.2 -preset medium -crf 20             -maxrate 6000k -bufsize 12000k             -c:a aac -b:a 96k -ar 48000             -shortest -movflags +faststart             -metadata title="EarthPulse 3D — Reels Vertical Demo"             -metadata comment="Real source code and live website capture by Suhail Labs"             promo/earthpulse-3d-reels-1080x1920.mp4
+          mkdir -p promo/raw/encoded promo
+          : > promo/raw/concat.txt
+
+          python3 - <<'PY' > promo/raw/segments.tsv
+          import json
+          for item in json.load(open('promo/raw/timings.json',encoding='utf-8')):
+              print(f"{item['name']}\t{item['trim']}\t{item['duration']}")
+          PY
+
+          while IFS=$'\t' read -r name trim duration; do
+            ffmpeg -loglevel error -y               -ss "$trim" -t "$duration" -i "promo/raw/$name.webm"               -vf "scale=800:1440:flags=lanczos,pad=1080:1920:140:240:color=0x030611,setsar=1,fps=30,format=yuv420p"               -an               -c:v libx264 -profile:v high -level:v 4.2 -preset medium -crf 20               -maxrate 6000k -bufsize 12000k               "promo/raw/encoded/$name.mp4"
+            echo "file '$PWD/promo/raw/encoded/$name.mp4'" >> promo/raw/concat.txt
+          done < promo/raw/segments.tsv
+
+          ffmpeg -loglevel error -y             -f concat -safe 0 -i promo/raw/concat.txt             -f lavfi -i "anullsrc=channel_layout=stereo:sample_rate=48000"             -map 0:v:0 -map 1:a:0             -c:v copy             -c:a aac -b:a 96k -ar 48000             -shortest -movflags +faststart             -metadata title="EarthPulse 3D — Reels Vertical Demo"             -metadata comment="Real source code and live website capture by Suhail Labs"             promo/earthpulse-3d-reels-1080x1920.mp4
 
           test -s promo/earthpulse-3d-reels-1080x1920.mp4
           ffprobe -v error             -show_entries stream=width,height,r_frame_rate             -show_entries format=duration,size             -of default=noprint_wrappers=1             promo/earthpulse-3d-reels-1080x1920.mp4 | tee promo/earthpulse-3d-reels-info.txt
@@ -60,35 +71,14 @@ jobs:
           grep -q "width=1080" promo/earthpulse-3d-reels-info.txt
           grep -q "height=1920" promo/earthpulse-3d-reels-info.txt
 
-      - name: Upload finished video artifact
+      - name: Upload finished MP4
         uses: actions/upload-artifact@v4
         with:
           name: earthpulse-3d-reels-1080x1920
           path: |
             promo/earthpulse-3d-reels-1080x1920.mp4
             promo/earthpulse-3d-reels-info.txt
+            promo/raw/timings.json
           if-no-files-found: error
           compression-level: 0
           retention-days: 30
-
-      - name: Publish finished video in repository
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add promo/earthpulse-3d-reels-1080x1920.mp4 promo/earthpulse-3d-reels-info.txt
-          if git diff --cached --quiet; then
-            echo "Promo video already current."
-            exit 0
-          fi
-          git commit -m "promo: publish 1080x1920 EarthPulse Reels video"
-
-          for attempt in 1 2 3 4 5; do
-            git fetch origin main
-            git rebase origin/main
-            if git push origin HEAD:main; then
-              exit 0
-            fi
-            sleep 3
-          done
-          echo "Unable to publish promo video after retries."
-          exit 1
