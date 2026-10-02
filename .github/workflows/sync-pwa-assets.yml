@@ -1,0 +1,79 @@
+name: Sync PWA Assets
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/sync-pwa-assets.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  assets:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Copy approved creator portrait
+        run: |
+          mkdir -p assets/images icons
+          curl -fL --retry 4 --retry-delay 2             "https://raw.githubusercontent.com/suhailsaeedy-design/suhail-live-wallpapers/main/assets/images/suhail-saeedy-about-approved.jpeg"             -o assets/images/suhail-saeedy-about-approved.jpeg
+          test -s assets/images/suhail-saeedy-about-approved.jpeg
+      - name: Generate PWA icons
+        run: |
+          python3 -m pip install --quiet pillow
+          python3 - <<'PY'
+          from PIL import Image, ImageDraw, ImageFilter
+          import math, os
+          os.makedirs("icons", exist_ok=True)
+
+          def icon(size, path):
+              im=Image.new("RGB",(size,size),(3,7,18))
+              glow=Image.new("RGBA",(size,size),(0,0,0,0))
+              gd=ImageDraw.Draw(glow)
+              cx=cy=size/2
+              for r,a in [(0.42,24),(0.33,38),(0.24,62)]:
+                  rr=size*r
+                  gd.ellipse((cx-rr,cy-rr,cx+rr,cy+rr),fill=(37,118,255,a))
+              glow=glow.filter(ImageFilter.GaussianBlur(size*0.06))
+              im=Image.alpha_composite(im.convert("RGBA"),glow)
+              d=ImageDraw.Draw(im)
+              # planet
+              pr=size*0.19
+              d.ellipse((cx-pr,cy-pr,cx+pr,cy+pr),fill=(28,85,221,255))
+              d.ellipse((cx-pr*0.55,cy-pr*0.55,cx+pr*0.25,cy+pr*0.20),fill=(83,224,255,165))
+              # orbital ellipses
+              box=(size*0.16,size*0.30,size*0.84,size*0.70)
+              for deg,col in [(-24,(126,102,255,210)),(27,(67,194,255,190))]:
+                  layer=Image.new("RGBA",(size,size),(0,0,0,0))
+                  ld=ImageDraw.Draw(layer)
+                  ld.ellipse(box,outline=col,width=max(2,size//80))
+                  layer=layer.rotate(deg,resample=Image.Resampling.BICUBIC,center=(cx,cy))
+                  im=Image.alpha_composite(im,layer)
+              # satellite point
+              x=cx+size*0.29; y=cy-size*0.13
+              rr=size*0.035
+              d=ImageDraw.Draw(im)
+              d.ellipse((x-rr,y-rr,x+rr,y+rr),fill=(101,246,239,255))
+              im.convert("RGB").save(path,quality=95)
+
+          icon(192,"icons/icon-192.png")
+          icon(512,"icons/icon-512.png")
+          icon(180,"icons/apple-touch-icon.png")
+          PY
+          test -s icons/icon-192.png
+          test -s icons/icon-512.png
+          test -s icons/apple-touch-icon.png
+      - name: Commit assets
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/images/suhail-saeedy-about-approved.jpeg icons
+          if git diff --cached --quiet; then
+            echo "PWA assets already current."
+          else
+            git commit -m "assets: sync creator portrait and PWA icons"
+            git push
+          fi
