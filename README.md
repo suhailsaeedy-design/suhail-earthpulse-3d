@@ -10,7 +10,9 @@
 - Live earthquakes from **USGS**
 - Open natural events from **NASA EONET** (wildfires, severe storms, volcanoes, floods and more when available)
 - Current weather from **Open-Meteo** by tapping the globe or searching a place
+- Solar System mode with the Sun, eight animated planets, orbit paths and planet fly-to close-ups
 - Galaxy mode with procedural Milky-Way-style particles
+- Planet fly-to cards with orbital distance, diameter, year and moon reference facts
 - Featured-star fly-to experiences for Sirius, Vega, Betelgeuse and Proxima Centauri
 - Light and Night themes
 - Responsive mobile-first UI for iPhone, Android and desktop browsers
