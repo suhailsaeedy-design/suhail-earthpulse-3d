@@ -1,0 +1,5 @@
+Planet, Sun, Moon, Earth and Milky Way textures:
+Solar System Scope / INOVE
+https://www.solarsystemscope.com/textures/
+Distributed under Creative Commons Attribution 4.0 International (CC BY 4.0).
+Textures are based on NASA elevation and imagery data; some unmapped planetary areas are artistically filled by the texture provider.
