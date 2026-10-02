@@ -1,4 +1,4 @@
-const CACHE = 'earthpulse-shell-v2';
+const CACHE = 'earthpulse-shell-v3';
 const SHELL = [
   './',
   './index.html',
@@ -8,7 +8,10 @@ const SHELL = [
   './src/main.js',
   './src/scene.js',
   './src/api.js',
-  './src/data.js'
+  './src/data.js',
+  './vendor/three.module.js',
+  './vendor/addons/controls/OrbitControls.js',
+  './public/earth-blue-marble.jpg'
 ];
 
 self.addEventListener('install', event => {
