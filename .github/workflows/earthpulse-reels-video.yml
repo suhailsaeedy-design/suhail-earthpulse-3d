@@ -50,18 +50,37 @@ jobs:
           sudo apt-get update -y >/dev/null
           sudo apt-get install -y ffmpeg >/dev/null
           mkdir -p promo/raw/encoded promo
-          : > promo/raw/concat.txt
 
-          python3 - <<'PY' > promo/raw/segments.tsv
-          import json
-          for item in json.load(open('promo/raw/timings.json',encoding='utf-8')):
-              print(f"{item['name']}|{item['trim']}|{item['duration']}")
+          python3 - <<'PY'
+          import json, pathlib, subprocess
+
+          root=pathlib.Path('promo/raw')
+          encoded=root/'encoded'
+          encoded.mkdir(parents=True,exist_ok=True)
+          items=json.load(open(root/'timings.json',encoding='utf-8'))
+          concat=[]
+
+          for item in items:
+              name=item['name']
+              trim=str(item['trim'])
+              duration=str(item['duration'])
+              src=root/f'{name}.webm'
+              out=encoded/f'{name}.mp4'
+              cmd=[
+                  'ffmpeg','-loglevel','error','-y',
+                  '-ss',trim,'-t',duration,'-i',str(src),
+                  '-vf','scale=800:1440:flags=lanczos,pad=1080:1920:140:240:color=0x030611,setsar=1,fps=30,format=yuv420p',
+                  '-an',
+                  '-c:v','libx264','-profile:v','high','-level:v','4.2','-preset','medium','-crf','20',
+                  '-maxrate','6000k','-bufsize','12000k',
+                  str(out)
+              ]
+              print('ENCODE',name,'trim',trim,'duration',duration)
+              subprocess.run(cmd,check=True)
+              concat.append(f"file '{out.resolve()}'")
+
+          (root/'concat.txt').write_text('\n'.join(concat)+'\n',encoding='utf-8')
           PY
-
-          while IFS='|' read -r name trim duration; do
-            ffmpeg -loglevel error -y               -ss "$trim" -t "$duration" -i "promo/raw/$name.webm"               -vf "scale=800:1440:flags=lanczos,pad=1080:1920:140:240:color=0x030611,setsar=1,fps=30,format=yuv420p"               -an               -c:v libx264 -profile:v high -level:v 4.2 -preset medium -crf 20               -maxrate 6000k -bufsize 12000k               "promo/raw/encoded/$name.mp4"
-            echo "file '$PWD/promo/raw/encoded/$name.mp4'" >> promo/raw/concat.txt
-          done < promo/raw/segments.tsv
 
           ffmpeg -loglevel error -y             -f concat -safe 0 -i promo/raw/concat.txt             -f lavfi -i "anullsrc=channel_layout=stereo:sample_rate=48000"             -map 0:v:0 -map 1:a:0             -c:v copy             -c:a aac -b:a 96k -ar 48000             -shortest -movflags +faststart             -metadata title="EarthPulse 3D — Reels Vertical Demo"             -metadata comment="Real source code and live website capture by Suhail Labs"             promo/earthpulse-3d-reels-1080x1920.mp4
 
