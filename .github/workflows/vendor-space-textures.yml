@@ -1,0 +1,56 @@
+name: Vendor Real Space Textures
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/vendor-space-textures.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  vendor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Download CC BY 4.0 planetary textures
+        run: |
+          mkdir -p public/textures
+          base="https://extension.solarsystemscope.com/textures/download"
+          curl -fL --retry 4 "$base/2k_mercury.jpg" -o public/textures/mercury.jpg
+          curl -fL --retry 4 "$base/2k_venus_atmosphere.jpg" -o public/textures/venus.jpg
+          curl -fL --retry 4 "$base/2k_venus_surface.jpg" -o public/textures/venus-surface.jpg
+          curl -fL --retry 4 "$base/2k_earth_daymap.jpg" -o public/textures/earth-day.jpg
+          curl -fL --retry 4 "$base/2k_earth_nightmap.jpg" -o public/textures/earth-night.jpg
+          curl -fL --retry 4 "$base/2k_earth_clouds.jpg" -o public/textures/earth-clouds.jpg
+          curl -fL --retry 4 "$base/2k_mars.jpg" -o public/textures/mars.jpg
+          curl -fL --retry 4 "$base/2k_jupiter.jpg" -o public/textures/jupiter.jpg
+          curl -fL --retry 4 "$base/2k_saturn.jpg" -o public/textures/saturn.jpg
+          curl -fL --retry 4 "$base/2k_saturn_ring_alpha.png" -o public/textures/saturn-ring.png
+          curl -fL --retry 4 "$base/2k_uranus.jpg" -o public/textures/uranus.jpg
+          curl -fL --retry 4 "$base/2k_neptune.jpg" -o public/textures/neptune.jpg
+          curl -fL --retry 4 "$base/2k_sun.jpg" -o public/textures/sun.jpg
+          curl -fL --retry 4 "$base/2k_moon.jpg" -o public/textures/moon.jpg
+          curl -fL --retry 4 "$base/2k_stars_milky_way.jpg" -o public/textures/milky-way.jpg
+          for f in public/textures/*; do test -s "$f"; done
+          cat > public/textures/ATTRIBUTION.txt <<'EOF'
+          Planet, Sun, Moon, Earth and Milky Way textures:
+          Solar System Scope / INOVE
+          https://www.solarsystemscope.com/textures/
+          Distributed under Creative Commons Attribution 4.0 International (CC BY 4.0).
+          Textures are based on NASA elevation and imagery data; some unmapped planetary areas are artistically filled by the texture provider.
+          EOF
+      - name: Commit textures
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/textures
+          if git diff --cached --quiet; then
+            echo "Textures already current."
+          else
+            git commit -m "assets: add real planetary textures with attribution"
+            git push
+          fi
