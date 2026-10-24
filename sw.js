@@ -1,4 +1,4 @@
-const CACHE = 'earthpulse-offline-v7';
+const CACHE = 'earthpulse-offline-v7-portrait-oct26';
 const CORE = [
   './',
   './index.html',
@@ -11,7 +11,7 @@ const CORE = [
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/apple-touch-icon.png',
-  './assets/images/suhail-saeedy-about-approved.jpeg',
+  './assets/images/suhail-about-2026-10.webp',
   './public/earth-blue-marble.jpg',
   './public/textures/earth-day.jpg',
   './public/textures/earth-night.jpg',
