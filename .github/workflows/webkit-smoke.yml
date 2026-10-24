@@ -91,7 +91,7 @@ jobs:
               './styles.css',
               './public/textures/earth-day.jpg',
               './public/textures/moon.jpg',
-              './assets/images/suhail-saeedy-about-approved.jpeg'
+              './assets/images/suhail-about-2026-10.webp'
             ];
             const hits=await Promise.all(required.map(async path => !!(await caches.match(path,{ignoreSearch:true}))));
             return {
